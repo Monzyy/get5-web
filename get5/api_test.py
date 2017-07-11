@@ -72,7 +72,7 @@ class ApiTests(get5_test.Get5Test):
                                  })
         self.assertEqual(response.status_code, 200)
         playerstats = PlayerStats.query.filter_by(
-            match_id=1, map_id=1, steam_id=76561198053858673).first()
+            match_id=1, map_id=1, steam_id='76561198053858673').first()
         self.assertEqual(playerstats.kills, 5)
         self.assertEqual(playerstats.team_id, 1)
 
@@ -107,7 +107,8 @@ class ApiTests(get5_test.Get5Test):
                                      'key': matchkey,
                                  })
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Match already finalized', response.data)
+
+        self.assertIn('Match already finalized', response.get_data().decode('utf8'))
 
         # Should still be able to render match pages
         self.assertEqual(self.app.get('/match/1').status_code, 200)
@@ -124,19 +125,19 @@ class ApiTests(get5_test.Get5Test):
 
         response = self.app.post('/match/1/map/0/start', data=data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Wrong API key', response.data)
+        self.assertIn('Wrong API key', response.get_data().decode('utf8'))
 
         response = self.app.post('/match/1/map/0/update', data=data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Wrong API key', response.data)
+        self.assertIn('Wrong API key', response.get_data().decode('utf8'))
 
         response = self.app.post('/match/1/map/0/finish', data=data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Wrong API key', response.data)
+        self.assertIn('Wrong API key', response.get_data().decode('utf8'))
 
         response = self.app.post('/match/1/finish', data=data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Wrong API key', response.data)
+        self.assertIn('Wrong API key', response.get_data().decode('utf8'))
 
     def test_rate_limiting(self):
         match = Match.query.get(1)

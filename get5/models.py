@@ -22,7 +22,7 @@ class User(db.Model):
 
     @staticmethod
     def get_or_create(steam_id):
-        rv = User.query.filter_by(steam_id=steam_id).first()
+        rv = User.query.filter_by(steam_id=steam_id).one_or_none()
         if rv is None:
             rv = User()
             rv.steam_id = steam_id

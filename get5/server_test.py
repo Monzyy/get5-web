@@ -22,11 +22,11 @@ class TeamTests(get5_test.Get5Test):
                               })
             self.assertEqual(response.status_code, 200)
             self.assertIn(
-                'Error in the Server IP field', response.data)
+                'Error in the Server IP field', response.get_data().decode('utf8'))
             self.assertIn(
-                'Error in the Server port field', response.data)
+                'Error in the Server port field', response.get_data().decode('utf8'))
             self.assertIn(
-                'Error in the RCON password field', response.data)
+                'Error in the RCON password field', response.get_data().decode('utf8'))
 
     # Test successful server creation
     def test_server_create(self):
@@ -92,7 +92,7 @@ class TeamTests(get5_test.Get5Test):
                 sess['user_id'] = 1
             response = c.get('/server/1/delete')
             self.assertEqual(response.status_code, 400)
-            self.assertIn('Cannot delete when in use', response.data)
+            self.assertIn('Cannot delete when in use', response.get_data().decode('utf8'))
 
         # Can't delete some else's server when logged in
         with self.app as c:
@@ -100,13 +100,13 @@ class TeamTests(get5_test.Get5Test):
                 sess['user_id'] = 2
             response = c.get('/server/2/delete')
             self.assertEqual(response.status_code, 400)
-            self.assertIn('Not your server', response.data)
+            self.assertIn('Not your server', response.get_data().decode('utf8'))
 
         # Can't delete some else's server without being logged in
         with self.app as c:
             response = c.get('/server/1/delete')
             self.assertEqual(response.status_code, 400)
-            self.assertIn('Not your server', response.data)
+            self.assertIn('Not your server', response.get_data().decode('utf8'))
 
     # Make sure a user can't edit someone else's servers
     def test_edit_server_wronguser(self):

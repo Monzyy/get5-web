@@ -23,9 +23,9 @@ class Get5Test(unittest.TestCase):
         db.drop_all()
 
     def create_test_data(self):
-        user = User.get_or_create(123)
+        user = User.get_or_create('123')
         user.admin = True
-        User.get_or_create(12345)
+        User.get_or_create('12345')
         db.session.commit()
 
         team1 = Team.create(user, 'EnvyUs', 'EnvyUs', 'fr',

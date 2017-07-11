@@ -73,8 +73,8 @@ class RconError(ValueError):
 
 def send_rcon_command(host, port, rcon_password, command,
                       raise_errors=False, num_retries=3, timeout=3.0):
-    from valve.source.rcon import (RCON, IncompleteMessageError,
-                                   AuthenticationError, NoResponseError)
+    from valve.rcon import (RCON, RCONMessageError,
+                                   RCONAuthenticationError, RCONTimeoutError)
 
     try:
         port = int(port)
@@ -88,15 +88,8 @@ def send_rcon_command(host, port, rcon_password, command,
             with RCON((host, port), rcon_password, timeout=timeout) as rcon:
                 response = rcon(command)
                 return strip_rcon_logline(response)
-
-        except KeyError:
-            # There seems to be a bug in python-vavle where a wrong password
-            # trigger a KeyError at line 203 of valve/source/rcon.py,
-            # so this is a work around for that.
-            raise RconError('Incorrect rcon password')
-
         except (socket.error, socket.timeout,
-                IncompleteMessageError, AuthenticationError, NoResponseError) as e:
+                RCONMessageError, RCONAuthenticationError, RCONTimeoutError) as e:
             if attempts >= num_retries:
                 if raise_errors:
                     raise RconError(str(e))

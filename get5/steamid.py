@@ -17,9 +17,8 @@ def steam2_to_steam64(steam2):
 def steam3_to_steam2(steam3):
     if '[U:1:' not in steam3:
         return False, ''
-
     try:
-        x = int(steam3[5: len(steam3) - 1])
+        x = int(steam3[5:-1])
     except ValueError:
         return False, ''
 
@@ -27,7 +26,7 @@ def steam3_to_steam2(steam3):
         return False, ''
 
     a = x % 2
-    b = (x - a) / 2
+    b = (x - a) // 2
     steam2 = 'STEAM_0:{}:{}'.format(a, b)
     return True, steam2
 

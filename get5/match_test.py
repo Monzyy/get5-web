@@ -40,7 +40,7 @@ class MatchTests(get5_test.Get5Test):
                                   'veto_mappool': ['de_dust2', 'de_cache', 'de_mirage'],
                               })
             self.assertEqual(response.status_code, 200)
-            self.assertIn('Error in the Server field', response.data)
+            self.assertIn('Error in the Server field', response.get_data().decode('utf8'))
 
     # Try starting a match using someone else's server
     def test_match_create_not_my_server(self):
@@ -63,7 +63,7 @@ class MatchTests(get5_test.Get5Test):
                                   'veto_mappool': ['de_dust2', 'de_cache', 'de_mirage'],
                               })
             self.assertEqual(response.status_code, 200)
-            self.assertIn('Error in the Server field', response.data)
+            self.assertIn('Error in the Server field', response.get_data().decode('utf8'))
 
     # Test successful match creation
     def test_match_create(self):

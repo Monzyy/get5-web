@@ -130,7 +130,7 @@ class BadRequestError(ValueError):
 
 @app.errorhandler(BadRequestError)
 def bad_request_handler(error):
-    return bad_request(error.message)
+    return bad_request(error.args)
 
 
 def bad_request(message):

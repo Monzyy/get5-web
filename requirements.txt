@@ -36,7 +36,7 @@ pyflakes==1.2.3
 pylint==1.5.5
 python-editor==1.0
 python-openid==2.2.5
-python-valve==0.1.1
+https://github.com/Holiverh/python-valve/zipball/master # until new pypi release...
 requests==2.10.0
 six==1.10.0
 SQLAlchemy==1.0.13
