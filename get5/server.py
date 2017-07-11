@@ -1,6 +1,6 @@
 from get5 import app, db, flash_errors, config_setting
-from models import GameServer
-import util
+from .models import GameServer
+from . import util
 
 from flask import Blueprint, request, render_template, flash, g, redirect
 

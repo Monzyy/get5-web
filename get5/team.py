@@ -1,10 +1,10 @@
 from get5 import app, db, flash_errors, config_setting
-from models import User, Team
+from .models import User, Team
 
-import countries
-import logos
-import steamid
-import util
+from . import countries
+from . import logos
+from . import steamid
+from . import util
 
 from flask import Blueprint, request, render_template, flash, g, redirect, jsonify
 
@@ -170,7 +170,7 @@ def teams_user(userid):
             team_dict['tag'] = team.tag
             team_dict['flag'] = team.flag
             team_dict['logo'] = team.logo
-            team_dict['players'] = filter(lambda x: bool(x), team.auths)
+            team_dict['players'] = [x for x in team.auths if bool(x)]
             teams_dict[team.id] = team_dict
         return jsonify(teams_dict)
 

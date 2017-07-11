@@ -1,7 +1,7 @@
 import unittest
 
-import get5_test
-from countries import get_flag_img_path, valid_country, country_name
+from . import get5_test
+from .countries import get_flag_img_path, valid_country, country_name
 
 
 class ApiTests(get5_test.Get5Test):

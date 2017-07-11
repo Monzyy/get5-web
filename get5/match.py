@@ -1,10 +1,10 @@
 from flask import Blueprint, request, render_template, flash, g, redirect, jsonify, Markup
 
-import steamid
+from . import steamid
 import get5
 from get5 import app, db, BadRequestError, config_setting
-from models import User, Team, Match, GameServer
-import util
+from .models import User, Team, Match, GameServer
+from . import util
 
 from wtforms import (
     Form, widgets, validators,
@@ -79,8 +79,8 @@ class MatchForm(Form):
     mapchoices = config_setting('MAPLIST')
     default_mapchoices = config_setting('DEFAULT_MAPLIST')
     veto_mappool = MultiCheckboxField('Map pool',
-                                      choices=map(lambda name: (
-                                          name, util.format_mapname(name)), mapchoices),
+                                      choices=[(
+                                          name, util.format_mapname(name)) for name in mapchoices],
                                       default=default_mapchoices,
                                       validators=[mappool_validator],
                                       )

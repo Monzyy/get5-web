@@ -1,8 +1,8 @@
 import unittest
 
-import get5_test
+from . import get5_test
 from flask import url_for
-from models import User, Match, GameServer
+from .models import User, Match, GameServer
 
 
 class MatchTests(get5_test.Get5Test):

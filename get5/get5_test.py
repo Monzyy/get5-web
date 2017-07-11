@@ -3,7 +3,7 @@ import logging
 
 import get5
 from get5 import db
-from models import User, Team, GameServer, Match
+from .models import User, Team, GameServer, Match
 
 
 # All tests will use this base test framework, including the test date defined

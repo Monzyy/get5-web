@@ -1,7 +1,7 @@
 from get5 import app, db, cache
-import countries
-import logos
-import util
+from . import countries
+from . import logos
+from . import util
 
 from flask import url_for, Markup
 import requests
@@ -402,7 +402,7 @@ class Match(db.Model):
             add_if('flag', team.flag.upper())
             add_if('logo', team.logo)
             add_if('matchtext', matchtext)
-            d[teamkey]['players'] = filter(lambda x: x != '', team.auths)
+            d[teamkey]['players'] = [x for x in team.auths if x != '']
 
         add_team_data('team1', self.team1_id, self.team1_string)
         add_team_data('team2', self.team2_id, self.team2_string)

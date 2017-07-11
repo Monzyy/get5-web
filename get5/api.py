@@ -1,6 +1,6 @@
 from get5 import app, limiter, db, BadRequestError
-from util import as_int
-from models import Match, MapStats, PlayerStats, GameServer
+from .util import as_int
+from .models import Match, MapStats, PlayerStats, GameServer
 
 from flask import Blueprint, request
 import flask_limiter

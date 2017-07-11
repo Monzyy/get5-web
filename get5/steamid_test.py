@@ -1,7 +1,7 @@
 import unittest
 
-import steamid
-import get5_test
+from . import steamid
+from . import get5_test
 
 
 class SteamIdTests(get5_test.Get5Test):

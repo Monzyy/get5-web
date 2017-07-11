@@ -1,7 +1,7 @@
 import unittest
 
-import util
-import get5_test
+from . import util
+from . import get5_test
 
 
 class UtilTest(get5_test.Get5Test):

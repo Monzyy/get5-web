@@ -1,7 +1,7 @@
 import unittest
 
-import get5_test
-from models import Match, MapStats, PlayerStats, GameServer
+from . import get5_test
+from .models import Match, MapStats, PlayerStats, GameServer
 
 
 class ApiTests(get5_test.Get5Test):

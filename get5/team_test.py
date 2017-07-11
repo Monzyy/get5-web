@@ -2,8 +2,8 @@ import unittest
 
 from flask import url_for
 
-import get5_test
-from models import User, Team
+from . import get5_test
+from .models import User, Team
 
 
 class TeamTests(get5_test.Get5Test):

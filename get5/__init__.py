@@ -22,24 +22,25 @@ import sys
 import logging
 import logging.handlers
 
-import logos
-import steamid
-import util
+from . import logos
+from . import steamid
+from . import util
 
 from flask import (Flask, render_template, flash, jsonify,
                    request, g, session, redirect)
 
-import flask.ext.cache
-import flask.ext.sqlalchemy
-import flask.ext.openid
+import flask_cache
+import flask_sqlalchemy
+import flask_openid
 import flask_limiter
 
 # Import the Flask Framework
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('prod_config.py')
+print(app.config)
 
 # Setup caching
-cache = flask.ext.cache.Cache(app, config={
+cache = flask_cache.Cache(app, config={
     'CACHE_TYPE': 'filesystem',
     'CACHE_DIR': '/tmp',
     'CACHE_THRESHOLD': 25000,
@@ -47,17 +48,17 @@ cache = flask.ext.cache.Cache(app, config={
 })
 
 # Setup openid
-oid = flask.ext.openid.OpenID(app)
+oid = flask_openid.OpenID(app)
 
 # Setup database connection
-db = flask.ext.sqlalchemy.SQLAlchemy(app)
-from models import User, Team, GameServer, Match, MapStats, PlayerStats  # noqa: E402
+db = flask_sqlalchemy.SQLAlchemy(app)
+from .models import User, Team, GameServer, Match, MapStats, PlayerStats  # noqa: E402
 
 # Setup rate limiting
 limiter = flask_limiter.Limiter(
     app,
     key_func=flask_limiter.util.get_remote_address,
-    global_limits=['250 per minute'],
+    default_limits=['250 per minute'],
 )
 
 # Setup logging
@@ -85,16 +86,16 @@ _steam_id_re = re.compile('steamcommunity.com/openid/id/(.*?)$')
 
 
 def register_blueprints():
-    from api import api_blueprint
+    from .api import api_blueprint
     app.register_blueprint(api_blueprint)
 
-    from match import match_blueprint
+    from .match import match_blueprint
     app.register_blueprint(match_blueprint)
 
-    from team import team_blueprint
+    from .team import team_blueprint
     app.register_blueprint(team_blueprint)
 
-    from server import server_blueprint
+    from .server import server_blueprint
     app.register_blueprint(server_blueprint)
 
 
@@ -181,9 +182,9 @@ def home():
 
 
 def flash_errors(form):
-    for field, errors in form.errors.items():
+    for field, errors in list(form.errors.items()):
         for error in errors:
-            flash(u'Error in the %s field - %s' % (
+            flash('Error in the %s field - %s' % (
                 getattr(form, field).label.text,
                 error))
 
