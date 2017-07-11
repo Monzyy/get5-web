@@ -422,6 +422,49 @@ class Match(db.Model):
     def __repr__(self):
         return 'Match(id={})'.format(self.id)
 
+class Tournament(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    winner = db.Column(db.Integer, db.ForeignKey('team.id'))
+    cancelled = db.Column(db.Boolean, default=False)
+    finished = db.Column(db.Boolean, default=False)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
+    name = db.Column(db.String(60))
+    url = db.Column(db.String(60))
+    challonge_id = db.Column(db.Integer)
+    challonge_data = db.Column(db.PickleType)
+    participants = db.relationship('Team', backref='tournament', lazy='dynamic')
+    matches = db.relationship('Match', backref='tournament', lazy='dynamic')
+
+    @staticmethod
+    def create(user, name, url, challonge_id=None, challonge_data=None):
+        rv = Tournament()
+        rv.user_id = user.id
+        rv.name = name
+        rv.challonge_id = challonge_id
+        rv.challonge_data = challonge_data
+        db.session.add(rv)
+        return rv
+
+    def finalized(self):
+        return self.cancelled or self.finished()
+
+    def pending(self):
+        return self.start_time is None and not self.cancelled
+
+    def finished(self):
+        return self.end_time is not None and not self.cancelled
+
+    def live(self):
+        return self.start_time is not None and self.end_time is None and not self.cancelled
+
+    def get_user(self):
+        return User.query.get(self.user_id)
+
+    def __repr__(self):
+        return 'Tournament(id={})'.format(self.id)
+
 
 class MapStats(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -552,7 +595,7 @@ class PlayerStats(db.Model):
         return rv
 
 
-@cache.memoize(timeout=60 * 60 * 24)  # 1 day timeout
+@cache.memoize(timeout=60 * 60 * 12)  # 0.5 day timeout
 def get_steam_name(steam64):
     url = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={}&steamids={}'
     url = url.format(app.config['STEAM_API_KEY'], steam64)

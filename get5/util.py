@@ -74,7 +74,7 @@ class RconError(ValueError):
 def send_rcon_command(host, port, rcon_password, command,
                       raise_errors=False, num_retries=3, timeout=3.0):
     from valve.rcon import (RCON, RCONMessageError,
-                                   RCONAuthenticationError, RCONTimeoutError)
+                            RCONAuthenticationError, RCONTimeoutError)
 
     try:
         port = int(port)
@@ -111,7 +111,7 @@ def get_version():
     try:
         root_dir = os.path.realpath(os.path.join(
             os.getcwd(), os.path.dirname(__file__), '..'))
-        cmd = ['git', 'rev-parse', '--short', 'HEAD']
-        return subprocess.check_output(cmd, cwd=root_dir).strip()
+        cmd = ['git', 'describe', '--tags', '--always']
+        return subprocess.check_output(cmd, cwd=root_dir).strip().decode('utf8')
     except (OSError, subprocess.CalledProcessError):
         return None

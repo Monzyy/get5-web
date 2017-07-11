@@ -25,6 +25,7 @@ import logging.handlers
 from . import logos
 from . import steamid
 from . import util
+from . import config
 
 from flask import (Flask, render_template, flash, jsonify,
                    request, g, session, redirect)
@@ -37,7 +38,17 @@ import flask_limiter
 # Import the Flask Framework
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('prod_config.py')
-print(app.config)
+
+def config_setting(key):
+    if key in app.config:
+        return app.config[key]
+    else:
+        if key in config.defaults:
+            return config.defaults[key]
+        else:
+            app.logger.error(
+                'Tried to lookup missing config setting: %s' % key)
+            return None
 
 # Setup caching
 cache = flask_cache.Cache(app, config={
@@ -78,7 +89,8 @@ app.logger.addHandler(stream_handler)
 app.logger.setLevel(logging.INFO)
 
 # Find version info
-app.jinja_env.globals.update(COMMIT_STRING=util.get_version())
+app.jinja_env.globals.update(VERSION=util.get_version())
+app.jinja_env.globals.update(BRAND=config_setting('BRAND'))
 
 # Setup any data structures needed
 logos.initialize_logos()
@@ -215,56 +227,6 @@ def get_metrics():
     add_val('Servers added', GameServer.query.count())
     add_val('Maps with stats saved', MapStats.query.count())
     add_val('Unique players', PlayerStats.query.distinct().count())
+    add_val('Top 10 killers', {player.name: player.kills for player in PlayerStats.query.order_by('kills').limit(10).all()})
 
     return values
-
-
-_config_defaults = {
-    'LOG_PATH': None,
-    'DEBUG': False,
-    'TESTING': False,
-    'SQLALCHEMY_DATABASE_URI': 'mysql://user:password@host/db',
-    'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-    'STEAM_API_KEY': '???',
-    'SECRET_KEY': '???',
-    'USER_MAX_SERVERS': 10,
-    'USER_MAX_TEAMS': 100,
-    'USER_MAX_MATCHES': 1000,
-    'DEFAULT_PAGE': '/matches',
-    'ADMINS_ACCESS_ALL_MATCHES': False,
-    'CREATE_MATCH_TITLE_TEXT': False,
-    'WHITELISTED_IDS': [],
-    'ADMIN_IDS': [],
-    'MAPLIST': [
-        'de_cache',
-        'de_cbble',
-        'de_inferno',
-        'de_mirage',
-        'de_nuke',
-        'de_overpass',
-        'de_train',
-        'de_dust2',
-        'de_season'
-    ],
-    'DEFAULT_MAPLIST': [
-        'de_cache',
-        'de_cbble',
-        'de_inferno',
-        'de_mirage',
-        'de_nuke',
-        'de_overpass',
-        'de_train',
-    ],
-}
-
-
-def config_setting(key):
-    if key in app.config:
-        return app.config[key]
-    else:
-        if key in _config_defaults:
-            return _config_defaults[key]
-        else:
-            app.logger.error(
-                'Tried to lookup missing config setting: %s' % key)
-            return None
