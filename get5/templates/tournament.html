@@ -4,23 +4,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<div class="panel panel-primary">
-    <div class="panel-heading">Command response</div>
-
-    <div class="panel-body">
-        {% for message in messages %}
-        <b>{{ message[1] }}</b>
-        <br>
-        {% endfor %}
-    </div>
-
-</div>
-<br>
-{% endif %}
-{% endwith %}
-
 <div id="content">
     <div class="container">
         <div class="jumbotron">
@@ -57,7 +40,7 @@
                 Map pool: {{ ', '.join(maps) }}
             </p>
             {% if tournament.challonge_data.state == 'pending' %}
-            <p>        
+            <p>
                 <a id="sign_up" href="{{ tournament.challonge_data.sign_up_url }}" class="btn btn-primary btn-lg">Sign Up</a>
             </p>
             {% endif %}

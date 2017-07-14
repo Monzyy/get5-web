@@ -8,17 +8,33 @@
   <div class="container">
     <h1>
       {{ team.get_flag_html(1.0) }} {{ team.name }} {{ team.get_logo_html(1.0) }}
-      {% if team.can_edit(user) %}
+
       <div class="pull-right">
+        {% if team.can_edit(user) %}
         <a href="/team/{{team.id}}/edit" class="btn btn-primary">Edit</a>
+        {% endif %}
+        {% if team.open_join and user.steam_id not in team.auths %}
+        <a href="/team/{{team.id}}/join" class="btn btn-success">Join team</a>
+        {% endif %}
       </div>
-      {% endif %}
+
     </h1>
 
     <br>
     <div class="row">
         <div class="col-md-4">
-            {{ panel_table('Players', team.get_players(), 'http://steamcommunity.com/profiles/', 'auth', 'name') }}
+            <div class="panel panel-default">
+              <div class="panel-heading">Players</div>
+                <table class="table">
+                  {% for auth, name in team.get_players() %}
+                  <tr>
+                      <td><a href="http://steamcommunity.com/profiles/{{auth}}">{{name}}</a></td>
+                  </tr>
+                  {% else %}
+                  <tr><td>None</td></tr>
+                  {% endfor %}
+              </table>
+            </div>
         </div>
         <div class="col-md-4">
             <div class="panel panel-default">

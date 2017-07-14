@@ -98,16 +98,17 @@ class Team(db.Model):
     auths = db.Column(db.PickleType)
     challonge_id = db.Column(db.Integer, index=True, nullable=True)
     public_team = db.Column(db.Boolean, index=True)
+    open_join = db.Column(db.Boolean, index=True)
 
     @staticmethod
-    def create(user, name, tag, flag, logo, auths, challonge_id=None, public_team=False):
+    def create(user, name, tag, flag, logo, auths, challonge_id=None, public_team=False, open_join=False):
         rv = Team()
         rv.user_id = user.id
-        rv.set_data(name, tag, flag, logo, auths, challonge_id, public_team and user.admin)
+        rv.set_data(name, tag, flag, logo, auths, challonge_id, public_team and user.admin, open_join)
         db.session.add(rv)
         return rv
 
-    def set_data(self, name, tag, flag, logo, auths, challonge_id, public_team):
+    def set_data(self, name, tag, flag, logo, auths, challonge_id, public_team, open_join):
         self.name = name
         self.tag = tag
         self.flag = flag.lower() if flag else ''
@@ -117,6 +118,7 @@ class Team(db.Model):
         self.auths = auths
         self.challonge_id = challonge_id
         self.public_team = public_team
+        self.open_join = open_join
 
     def can_edit(self, user):
         if not user:

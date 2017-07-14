@@ -6,7 +6,7 @@ from . import logos
 from . import steamid
 from . import util
 
-from flask import Blueprint, request, render_template, flash, g, redirect, jsonify
+from flask import Blueprint, request, render_template, flash, g, redirect, jsonify, url_for
 
 from wtforms import (
     Form, validators,
@@ -51,6 +51,7 @@ class TeamForm(Form):
     auth5 = StringField('Player 5', validators=[valid_auth])
     auth6 = StringField('Player 6', validators=[valid_auth])
     auth7 = StringField('Player 7', validators=[valid_auth])
+    open_join = BooleanField('Allow users to join team')
     public_team = BooleanField('Public Team')
 
     def get_auth_list(self):
@@ -82,7 +83,8 @@ def team_create():
 
             team = Team.create(g.user, data['name'], data['tag'],
                                data['country_flag'], data['logo'],
-                               auths, data['public_team'] and g.user.admin)
+                               auths, data['public_team'] and g.user.admin,
+                               data['open_join'])
 
             db.session.commit()
             app.logger.info(
@@ -104,6 +106,25 @@ def team(teamid):
     return render_template('team.html', user=g.user, team=team, tournament_list=tournament_list)
 
 
+@team_blueprint.route('/team/<int:teamid>/join', methods=['GET'])
+def team_join(teamid):
+    if not g.user:
+        return redirect('/login')
+    team = Team.query.get_or_404(teamid)
+    if not team.open_join:
+        flash('Team does not allow joining!', 'danger')
+    elif '' not in team.auths:
+        flash('Team is full!', 'danger')
+    elif g.user.steam_id not in team.auths:
+        auths = list(team.auths)
+        auths[auths.index('')] = g.user.steam_id
+        team.auths = auths
+        db.session.commit()
+    else:
+        flash('You are already a part of this team', 'warning')
+    return redirect(url_for('team.team', teamid=teamid))
+
+
 @team_blueprint.route('/team/<int:teamid>/edit', methods=['GET', 'POST'])
 def team_edit(teamid):
     team = Team.query.get_or_404(teamid)
@@ -123,7 +144,8 @@ def team_edit(teamid):
         auth5=team.auths[4],
         auth6=team.auths[5],
         auth7=team.auths[6],
-        public_team=team.public_team)
+        public_team=team.public_team,
+        open_join=team.open_join)
 
     if request.method == 'GET':
         return render_template('team_create.html', user=g.user, form=form,
@@ -135,9 +157,11 @@ def team_edit(teamid):
                 data = form.data
                 team.set_data(data['name'], data['tag'], data['country_flag'],
                               data['logo'], form.get_auth_list(),
-                              data['public_team'] and g.user.admin)
+                              team.challonge_id,
+                              data['public_team'] and g.user.admin,
+                              data['open_join'])
                 db.session.commit()
-                return redirect('/teams/{}'.format(team.user_id))
+                return redirect(url_for('team.team', teamid=teamid))
             else:
                 flash_errors(form)
 

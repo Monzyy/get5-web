@@ -1,10 +1,8 @@
 from valve.steam.id import SteamID, SteamIDError
-
-import json
-import re
-from xml.dom import minidom
-from xml.parsers.expat import ExpatError
 import requests
+
+import re
+from lxml import etree
 
 
 def steam2_to_steam64(steam2):
@@ -31,10 +29,10 @@ def steam3_to_steam2(steam3):
     return True, steam2
 
 
-def steam64_from_dom(dom):
-    elements = dom.getElementsByTagName('steamID64')
-    if len(elements) >= 1:
-        return True, str(elements[0].firstChild.data)
+def steam64_from_xml(xml):
+    steamid = xml.findtext('steamID64')
+    if steamid:
+        return True, steamid
     else:
         return False, ''
 
@@ -44,11 +42,11 @@ def custom_url_to_steam3(url):
         url += '?xml=1'
 
     try:
-        dom = minidom.parse(requests.get(url).text)
-    except ExpatError:
+        xml = etree.fromstring(requests.get(url).content)
+    except Exception:
         return False, ''
 
-    return steam64_from_dom(dom)
+    return steam64_from_xml(xml)
 
 
 def custom_name_to_steam3(name):
