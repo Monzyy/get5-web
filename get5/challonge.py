@@ -61,13 +61,13 @@ class ChallongeClient(object):
                 for val in v:
                     val = _prepare_value(val)
                     if prefix:
-                        params[f"{prefix}[{k}][]"] = val
+                        params["{}[{}][]".format(prefix, k)] = val
                     else:
                         params[k + "[]"] = val
             else:
                 v = self._prepare_value(v)
                 if prefix:
-                    params[f"{prefix}[{k}]"] = v
+                    params["{}[{}]".format(prefix, k)] = v
                 else:
                     params[k] = v
 
@@ -88,7 +88,7 @@ class ChallongeClient(object):
     def tournament(self, id, include_participants=True, include_matches=True):
         include_participants = 1 if include_participants else 0
         include_matches = 1 if include_matches else 0
-        return self.fetch('get', f'tournaments/{id}',
+        return self.fetch('get', 'tournaments/{}'.format(id),
                           include_matches=include_matches,
                           include_participants=include_participants)
 
@@ -99,27 +99,27 @@ class ChallongeClient(object):
                           open_signup=open_signup, game_id=194, **kwargs)
 
     def delete_tournament(self, id):
-        val = self.fetch('delete', f'tournaments/{id}')
+        val = self.fetch('delete', 'tournaments/{}'.format(id))
         return val
 
     def start_tournament(self, id):
-        val = self.fetch('post', f'tournaments/{id}/start', include_matches=1)
+        val = self.fetch('post', 'tournaments/{}/start'.format(id), include_matches=1)
         return val
 
     def reset_tournament(self, id):
-        val = self.fetch('post', f'tournaments/{id}/reset')
+        val = self.fetch('post', 'tournaments/{}/reset'.format(id))
         return val
 
     def participants(self, tournament_id):
-        return self.fetch('get', f'tournaments/{tournament_id}/participants')
+        return self.fetch('get', 'tournaments/{}/participants'.format(tournament_id))
 
     def participant(self, id):
-        return self.fetch('get', f'tournaments/{tournament_id}/participants')
+        return self.fetch('get', 'tournaments/{}/participants'.format(tournament_id))
 
     def update_participant_misc(self, tournament_id, id, misc):
-        return self.fetch('put', f'tournaments/{tournament_id}/participants/{id}',
+        return self.fetch('put', 'tournaments/{}/participants/{}'.format(tournament_id, id),
                           params_prefix='participant', misc=str(misc))
 
     def update_match(self, tournament_id, id, **kwargs):
-        return self.fetch('put', f'tournaments/{tournament_id}/matches/{id}',
+        return self.fetch('put', 'tournaments/{}/matches/{}'.format(tournament_id, id),
                           params_prefix='match', **kwargs)
