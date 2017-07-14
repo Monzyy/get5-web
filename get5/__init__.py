@@ -232,3 +232,5 @@ def get_metrics():
     add_val('Top 10 killers', {player.name: player.kills for player in PlayerStats.query.order_by('kills').limit(10).all()})
 
     return values
+
+register_blueprints()

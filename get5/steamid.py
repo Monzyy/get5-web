@@ -2,9 +2,9 @@ from valve.steam.id import SteamID, SteamIDError
 
 import json
 import re
-import urllib.request, urllib.parse, urllib.error
 from xml.dom import minidom
 from xml.parsers.expat import ExpatError
+import requests
 
 
 def steam2_to_steam64(steam2):
@@ -44,7 +44,7 @@ def custom_url_to_steam3(url):
         url += '?xml=1'
 
     try:
-        dom = minidom.parse(urllib.request.urlopen(url))
+        dom = minidom.parse(requests.get(url).text)
     except ExpatError:
         return False, ''
 
@@ -97,7 +97,6 @@ def get_steam_userinfo(steamid, api_key):
         'key': api_key,
         'steamids': steamid,
     }
-    url = 'http://api.steampowered.com/ISteamUser/' \
-          'GetPlayerSummaries/v0001/?%s' % urllib.parse.urlencode(options)
-    rv = json.load(urllib.request.urlopen(url))
+    url = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0001'
+    rv = requests.get(url, params=options).json()
     return rv['response']['players']['player'][0] or {}
