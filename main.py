@@ -5,6 +5,8 @@ import sys
 
 import get5
 
+get5.register_blueprints()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Testing web server for get5.')
     parser.add_argument('--host', default='127.0.0.1',
@@ -13,6 +15,5 @@ if __name__ == '__main__':
                         help='port for the server to listen on')
     args = parser.parse_args()
 
-    get5.register_blueprints()
     sys.stderr.write(' * Starting get5 testing server. This is for testing only, do not run in production\n')
     get5.app.run(host=args.host, port=args.port)

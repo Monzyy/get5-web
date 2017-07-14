@@ -1,0 +1,103 @@
+{% from "macros.html" import panel_table %}
+
+{% extends "layout.html" %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="panel panel-primary">
+    <div class="panel-heading">Command response</div>
+
+    <div class="panel-body">
+        {% for message in messages %}
+        <b>{{ message[1] }}</b>
+        <br>
+        {% endfor %}
+    </div>
+
+</div>
+<br>
+{% endif %}
+{% endwith %}
+
+<div id="content">
+    <div class="container">
+        <div class="jumbotron">
+            <a href="{{ tournament.challonge_url }}"></a>
+            <h1>
+                {{ tournament.name }}
+                {% if admin_access %}
+                <div class="pull-right">
+                    <a id="sync" href="{{request.path}}/sync" class="btn btn-primary">Sync with Challonge</a>
+                    {% if tournament.start_time is none %}
+                    <a id="start" href="{{request.path}}/start" class="btn btn-success">Start</a>
+                    {% elif tournament.end_time is none %}
+                    <a id="start" href="{{request.path}}/reset" class="btn btn-danger">Reset!</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </h1>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar"
+                aria-valuenow="{{ tournament.challonge_data.progress_meter }}" aria-valuemin="0"
+                aria-valuemax="100" style="width: {{ tournament.challonge_data.progress_meter }}%;">
+                    <span class="sr-only">
+                        {{ tournament.challonge_data.progress_meter }}
+                    </span>
+                </div>
+            </div>
+            <p class="lead text-muted">
+                {{ tournament.challonge_data.state|title }} -
+                {{ tournament.challonge_data.tournament_type|title }} -
+                <a href="{{ tournament.url }}">Challonge</a>
+            </p>
+            <p class="text-muted" style="font-size: 10pt;">
+                {% set maps = tournament.veto_mappool.split() %}
+                Map pool: {{ ', '.join(maps) }}
+            </p>
+            {% if tournament.challonge_data.state == 'pending' %}
+            <p>        
+                <a id="sign_up" href="{{ tournament.challonge_data.sign_up_url }}" class="btn btn-primary btn-lg">Sign Up</a>
+            </p>
+            {% endif %}
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                {{ panel_table('Participants', participant_list, '/team', 'id', 'name') }}
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                  <div class="panel-heading">Matches</div>
+                    <table class="table">
+                      {% for match in match_list %}
+                      <tr>
+                          <td><a href="/match/{{match.id}}">#{{ match.title }} - {{ match.get_status_string() }}</a></td>
+                          <td class="text-center">{{ match.get_vs_string() }}</td>
+                      </tr>
+                      {% else %}
+                      <tr><td>None yet ...</td></tr>
+                      {% endfor %}
+                  </table>
+                </div>
+                {% if admin_access %}
+                <div class="panel panel-default">
+                  <div class="panel-heading">Server pool</div>
+                    <table class="table">
+                      {% for server in serverpool %}
+                      <tr>
+                          <td><a href="/server/{{server.id}}">{{ server.get_display() }}</a></td>
+                          <td>{{ server.in_use }}</td>
+                      </tr>
+                      {% else %}
+                      <tr><td>None yet ...</td></tr>
+                      {% endfor %}
+                  </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

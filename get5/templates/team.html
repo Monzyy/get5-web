@@ -1,3 +1,5 @@
+{% from "macros.html" import panel_table %}
+
 {% extends "layout.html" %}
 {% block content %}
 
@@ -8,40 +10,37 @@
       {{ team.get_flag_html(1.0) }} {{ team.name }} {{ team.get_logo_html(1.0) }}
       {% if team.can_edit(user) %}
       <div class="pull-right">
-        <a href="/team/{{team.id}}/edit" class="btn btn-primary btn-xs">Edit</a>
+        <a href="/team/{{team.id}}/edit" class="btn btn-primary">Edit</a>
       </div>
       {% endif %}
     </h1>
 
     <br>
-
-    <div class="panel panel-default">
-      <div class="panel-heading">Players</div>
-      <div class="panel-body">
-          {% for auth,name in team.get_players() %}
-          <a href="http://steamcommunity.com/profiles/{{auth}}" class="col-sm-offset-0"> {{auth}}</a>
-          {% if name %}
-          {{name}}
-          {% endif %}
-          <br>
-          {% endfor %}
-      </div>
+    <div class="row">
+        <div class="col-md-4">
+            {{ panel_table('Players', team.get_players(), 'http://steamcommunity.com/profiles/', 'auth', 'name') }}
+        </div>
+        <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">Recent Matches</div>
+                <table class="table">
+                  {% for match in team.get_recent_matches() %}
+                  <tr>
+                      <td><a href="/match/{{match.id}}">#{{match.id}}</a></td>
+                      <td>{{ team.get_vs_match_result(match.id) }}</td>
+                  </tr>
+                  {% else %}
+                  <tr><td>None</td></tr>
+                  {% endfor %}
+              </table>
+            </div>
+        </div>
+        <div class="col-md-4">
+            {{ panel_table('Participant in tournaments', tournament_list, '/tournament', 'id', 'name') }}
+        </div>
     </div>
-
-
-    <div class="panel panel-default">
-      <div class="panel-heading">Recent Matches</div>
-        <div class="panel-body">
-          {% for match in team.get_recent_matches() %}
-            <a href="/match/{{match.id}}">#{{match.id}}</a>: {{ team.get_vs_match_result(match.id) }}
-            <br>
-          {% endfor %}
-      </div>
-    </div>
-
   </div>
   <br>
-
 </div>
 
 {% endblock %}

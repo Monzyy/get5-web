@@ -63,7 +63,7 @@ oid = flask_openid.OpenID(app)
 
 # Setup database connection
 db = flask_sqlalchemy.SQLAlchemy(app)
-from .models import User, Team, GameServer, Match, MapStats, PlayerStats  # noqa: E402
+from .models import User, Team, GameServer, Match, Tournament, MapStats, PlayerStats  # noqa: E402
 
 # Setup rate limiting
 limiter = flask_limiter.Limiter(
@@ -100,6 +100,9 @@ _steam_id_re = re.compile('steamcommunity.com/openid/id/(.*?)$')
 def register_blueprints():
     from .api import api_blueprint
     app.register_blueprint(api_blueprint)
+
+    from .tournament import tournament_blueprint
+    app.register_blueprint(tournament_blueprint)
 
     from .match import match_blueprint
     app.register_blueprint(match_blueprint)
@@ -220,10 +223,9 @@ def get_metrics():
         values.append((name, value))
 
     add_val('Registered users', User.query.count())
+    add_val('Tournaments created', Tournament.query.count())
     add_val('Saved teams', Team.query.count())
     add_val('Matches created', Match.query.count())
-    add_val('Completed matches', Match.query.filter(
-        Match.end_time is not None).count())
     add_val('Servers added', GameServer.query.count())
     add_val('Maps with stats saved', MapStats.query.count())
     add_val('Unique players', PlayerStats.query.distinct().count())

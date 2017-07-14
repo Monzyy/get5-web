@@ -1,0 +1,90 @@
+{% from "macros.html" import show_flashed_messages %}
+
+{% extends "layout.html" %}
+{% block content %}
+
+<div id="content">
+
+ {{ show_flashed_messages() }}
+
+  <form role="form" action="" method="post" class="form-horizontal">
+
+      {{ form.csrf_token }}
+
+      <div class="form-group">
+      {{ form.tournament_name.label(class="col-sm-2 control-label") }}
+        <div class="col-sm-4">
+          {{ form.tournament_name(class="form-control input-sm") }}
+        </div>
+      </div>
+
+      <br>
+
+      <div class="form-group">
+      {{ form.tournament_url.label(class="col-sm-2 control-label") }}
+        <div class="col-sm-4">
+          {{ form.tournament_url(class="form-control input-sm") }}
+        </div>
+      </div>
+
+      <br>
+
+      <div class="form group">
+      {{ form.tournament_type.label(class="col-sm-2 control-label") }}
+        <div class="col-sm-offset-2">
+          {% for subfield in form.tournament_type %}
+          <tr>
+            <td>{{ subfield }}</td>
+            <td>{{ subfield.label }}</td>
+            <br>
+          </tr>
+        {% endfor %}
+        </div>
+      </div>
+
+      <br>
+
+      <div class="form-group">
+        {{ form.serverpool.label(class="col-sm-2 control-label", style="height:50px") }}
+        <div class="col-sm-offset-2">
+          {% for subfield in form.serverpool %}
+          <tr>
+            <td>{{ subfield }}</td>
+            <td>{{ subfield.label }}</td>
+            <br>
+          </tr>
+          {% endfor %}
+        </div>
+      </div>
+
+      <br>
+
+      <div class="form-group">
+        {{ form.veto_mappool.label(class="col-sm-2 control-label", style="height:50px") }}
+        <div class="col-sm-offset-2">
+          {% for subfield in form.veto_mappool %}
+          <tr>
+            <td>{{ subfield }}</td>
+            <td>{{ subfield.label }}</td>
+            <br>
+          </tr>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="input submit col-sm-offset-1">
+        <input type="submit" class="btn btn-primary" value="Create Tournament">
+      </div>
+
+      <br>
+
+  </form>
+
+</div>
+
+<script>
+  $(document).ready(function () {
+  $("#tournament_create").parent().addClass("active"); })
+</script>
+
+{% endblock %}

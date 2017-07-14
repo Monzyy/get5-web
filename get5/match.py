@@ -1,9 +1,9 @@
-from flask import Blueprint, request, render_template, flash, g, redirect, jsonify, Markup
+from flask import Blueprint, request, render_template, flash, g, redirect, jsonify, Markup, url_for
 
 from . import steamid
 import get5
 from get5 import app, db, BadRequestError, config_setting
-from .models import User, Team, Match, GameServer
+from .models import User, Team, Tournament, Match, GameServer
 from . import util
 
 from wtforms import (
@@ -139,7 +139,7 @@ def match_create():
 
         if max_matches >= 0 and num_matches >= max_matches and not g.user.admin:
             flash('You already have the maximum number of matches ({}) created'.format(
-                num_matches))
+                num_matches), 'danger')
 
         if form.validate():
             mock = config_setting('TESTING')
@@ -195,9 +195,9 @@ def match_create():
                 if mock or match.send_to_server():
                     return redirect('/mymatches')
                 else:
-                    flash('Failed to load match configs on server')
+                    flash('Failed to load match configs on server', 'danger')
             else:
-                flash(message)
+                flash(message, 'warning')
 
         else:
             get5.flash_errors(form)
@@ -249,6 +249,36 @@ def admintools_check(user, match):
     if match.cancelled:
         raise BadRequestError('Match is cancelled')
 
+@match_blueprint.route('/match/<int:matchid>/start')
+def match_start(matchid):
+    match = Match.query.get_or_404(matchid)
+    admintools_check(g.user, match)
+
+    if match.server_id is None:
+        tournament = Tournament.query.get_or_404(match.tournament_id)
+        server = tournament.get_available_server()
+        if server:
+            match.server_id = server.id
+            server.in_use = True
+        else:
+            flash('No server currently available in tournament server pool!', 'danger')
+            return redirect(url_for('match.match', matchid=matchid))
+    else:
+        server = GameServer.query.get(match.server_id)
+    json_reply, message = util.check_server_avaliability(server)
+    server_avaliable = (json_reply is not None)
+    if server_avaliable:
+        if 'plugin_version' in json_reply.keys():
+            match.plugin_version = json_reply['plugin_version']
+        else:
+            match.plugin_version = 'unknown'
+        match.start_time = datetime.datetime.utcnow()
+        if match.send_to_server():
+            db.session.commit()
+            return redirect('/mymatches')
+
+    flash("Failed to start match... " + message, 'warning')
+    return redirect(url_for('match.match', matchid=matchid))
 
 @match_blueprint.route('/match/<int:matchid>/cancel')
 def match_cancel(matchid):
@@ -265,7 +295,7 @@ def match_cancel(matchid):
     try:
         server.send_rcon_command('get5_endmatch', raise_errors=True)
     except util.RconError as e:
-        flash('Failed to cancel match: ' + str(e))
+        flash('Failed to cancel match: ' + str(e), 'danger')
 
     return redirect('/mymatches')
 
@@ -289,7 +319,7 @@ def match_rcon(matchid):
             flash(rcon_response)
         except util.RconError as e:
             print(e)
-            flash('Failed to send command: ' + str(e))
+            flash('Failed to send command: ' + str(e), 'danger')
 
     return redirect('/match/{}'.format(matchid))
 
@@ -304,7 +334,7 @@ def match_pause(matchid):
         server.send_rcon_command('sm_pause', raise_errors=True)
         flash('Paused match')
     except util.RconError as e:
-        flash('Failed to send pause command: ' + str(e))
+        flash('Failed to send pause command: ' + str(e), 'danger')
 
     return redirect('/match/{}'.format(matchid))
 
@@ -319,7 +349,7 @@ def match_unpause(matchid):
         server.send_rcon_command('sm_unpause', raise_errors=True)
         flash('Unpaused match')
     except util.RconError as e:
-        flash('Failed to send unpause command: ' + str(e))
+        flash('Failed to send unpause command: ' + str(e), 'danger')
 
     return redirect('/match/{}'.format(matchid))
 
@@ -344,7 +374,7 @@ def match_adduser(matchid):
             flash('Failed to send command: ' + str(e))
 
     else:
-        flash('Invalid steamid: {}'.format(auth))
+        flash('Invalid steamid: {}'.format(auth), 'warning')
 
     return redirect('/match/{}'.format(matchid))
 
@@ -388,9 +418,9 @@ def match_backup(matchid):
         command = 'get5_loadbackup {}'.format(file)
         response = server.send_rcon_command(command)
         if response:
-            flash('Restored backup file {}'.format(file))
+            flash('Restored backup file {}'.format(file), 'success')
         else:
-            flash('Failed to restore backup file {}'.format(file))
+            flash('Failed to restore backup file {}'.format(file), 'danger')
             return redirect('match/{}/backup'.format(matchid))
 
         return redirect('match/{}'.format(matchid))

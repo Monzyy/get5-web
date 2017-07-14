@@ -1,6 +1,7 @@
 from get5 import app, limiter, db, BadRequestError
 from .util import as_int
-from .models import Match, MapStats, PlayerStats, GameServer
+from .models import Match, MapStats, PlayerStats, GameServer, Tournament, Team
+from . import challonge 
 
 from flask import Blueprint, request
 import flask_limiter
@@ -10,6 +11,7 @@ import datetime
 
 api_blueprint = Blueprint('api', __name__)
 
+chall = challonge.ChallongeClient()
 
 _matchid_re = re.compile('/match/(\d*)/.*')
 
@@ -70,6 +72,14 @@ def match_finish(matchid):
         server.in_use = False
 
     db.session.commit()
+    try:
+        tournament = Tournament.query.get(match.tournament_id)
+        scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in match.get_scores()])
+        winner_team = Team.query.get(match.winner)
+        chall.update_match(tournament.challonge_id, match.challonge_id,
+                           scores_csv=scores_csv, winner_id=winner_team.challonge_id)
+    except challonge.ChallongeException as e:
+        pass
     app.logger.info('Finished match {}, winner={}'.format(match, winner))
 
     return 'Success'

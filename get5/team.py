@@ -100,7 +100,8 @@ def team_create():
 @team_blueprint.route('/team/<int:teamid>', methods=['GET'])
 def team(teamid):
     team = Team.query.get_or_404(teamid)
-    return render_template('team.html', user=g.user, team=team)
+    tournament_list = team.tournaments
+    return render_template('team.html', user=g.user, team=team, tournament_list=tournament_list)
 
 
 @team_blueprint.route('/team/<int:teamid>/edit', methods=['GET', 'POST'])
@@ -149,7 +150,7 @@ def team_delete(teamid):
     team = Team.query.get_or_404(teamid)
     if not team.can_delete(g.user):
         return 'Cannot delete this team', 400
-
+    team.tournaments.clear()
     if Team.query.filter_by(id=teamid).delete():
         db.session.commit()
 

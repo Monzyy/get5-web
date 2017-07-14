@@ -30,6 +30,8 @@
                     <ul class="nav navbar-nav">
                         <li><a id="matches" href="/matches">All Matches</a></li>
                         {% if user %}
+                        <li><a id="mytournaments" href="/mytournaments">My Tournaments</a></li>
+                        <li><a id="tournament_create" href="/tournament/create">Create a Tournament</a></li>
                         <li><a id="mymatches" href="/mymatches">My Matches</a></li>
                         <li><a id="match_create" href="/match/create">Create a Match</a></li>
                         <li><a id="myteams" href="/myteams">My Teams</a></li>
@@ -57,7 +59,7 @@
 
     <div class="panel-footer text-muted">
         <p>
-            Powered by <a href="http://steampowered.com">Steam</a> -
+            Powered by <a href="http://steampowered.com">Steam</a> &amp; <a href="https://github.com/splewis/get5">Sean Lewis' get5</a> -
             <a href="{{ url_for('metrics') }}">Stats</a>
             {% if VERSION %} - <a href="https://github.com/mathiassmichno/get5-web">{{VERSION}}</a> {% endif %}
         </p>

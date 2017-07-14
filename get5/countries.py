@@ -1,4 +1,8 @@
+from get5 import config_setting
+
 def get_flag_img_path(country_code):
+    if not country_code:
+        country_code = config_setting('DEFAULT_COUNTRY_CODE')
     if valid_country(country_code):
         return '/static/img/valve_flags/{}.png'.format(country_code.lower())
     else:
@@ -13,6 +17,8 @@ def valid_country(country_code):
 
 
 def country_name(country_code):
+    if not country_code:
+        country_code = config_setting('DEFAULT_COUNTRY_CODE')
     if not valid_country(country_code):
         return None
 

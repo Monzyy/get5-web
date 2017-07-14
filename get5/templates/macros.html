@@ -53,3 +53,22 @@
 >
 {% endif %}
 {% endmacro %}
+
+{% macro panel_table(heading, items, view_url, view_attr, show_attr) %}
+<div class="panel panel-default">
+  <div class="panel-heading">{{ heading }}</div>
+      <table class="table">
+          {% for i in items %}
+          <tr>
+              <td>
+              <a href="{{ view_url }}/{{ i|attr(view_attr) }}">{{ i|attr(show_attr) }}</a>
+              </td>
+          </tr>
+          {% else %}
+          <tr>
+              <td>None yet ...</td>
+          </tr>
+          {% endfor %}
+      </table>
+</div>
+{% endmacro %}

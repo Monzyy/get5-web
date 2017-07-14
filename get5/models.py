@@ -19,6 +19,7 @@ class User(db.Model):
     servers = db.relationship('GameServer', backref='user', lazy='dynamic')
     teams = db.relationship('Team', backref='user', lazy='dynamic')
     matches = db.relationship('Match', backref='user', lazy='dynamic')
+    tournaments = db.relationship('Tournament', backref='user', lazy='dynamic')
 
     @staticmethod
     def get_or_create(steam_id):
@@ -95,22 +96,26 @@ class Team(db.Model):
     flag = db.Column(db.String(4), default='')
     logo = db.Column(db.String(10), default='')
     auths = db.Column(db.PickleType)
+    challonge_id = db.Column(db.Integer, index=True, nullable=True)
     public_team = db.Column(db.Boolean, index=True)
 
     @staticmethod
-    def create(user, name, tag, flag, logo, auths, public_team=False):
+    def create(user, name, tag, flag, logo, auths, challonge_id=None, public_team=False):
         rv = Team()
         rv.user_id = user.id
-        rv.set_data(name, tag, flag, logo, auths, public_team and user.admin)
+        rv.set_data(name, tag, flag, logo, auths, challonge_id, public_team and user.admin)
         db.session.add(rv)
         return rv
 
-    def set_data(self, name, tag, flag, logo, auths, public_team):
+    def set_data(self, name, tag, flag, logo, auths, challonge_id, public_team):
         self.name = name
         self.tag = tag
         self.flag = flag.lower() if flag else ''
         self.logo = logo
+        if auths is None:
+            auths = ['' for _ in range(Team.MAXPLAYERS)]
         self.auths = auths
+        self.challonge_id = challonge_id
         self.public_team = public_team
 
     def can_edit(self, user):
@@ -228,6 +233,8 @@ class Match(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     server_id = db.Column(db.Integer, db.ForeignKey('game_server.id'), index=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'))
+    challonge_id = db.Column(db.Integer, index=True, nullable=True)
     team1_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     team2_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     team1_string = db.Column(db.String(32), default='')
@@ -252,7 +259,7 @@ class Match(db.Model):
 
     @staticmethod
     def create(user, team1_id, team2_id, team1_string, team2_string,
-               max_maps, skip_veto, title, veto_mappool, server_id=None):
+               max_maps, skip_veto, title, veto_mappool, challonge_id=None, server_id=None):
         rv = Match()
         rv.user_id = user.id
         rv.team1_id = team1_id
@@ -261,6 +268,7 @@ class Match(db.Model):
         rv.title = title
         rv.veto_mappool = ' '.join(veto_mappool)
         rv.server_id = server_id
+        rv.challonge_id = challonge_id
         rv.max_maps = max_maps
         rv.api_key = ''.join(random.SystemRandom().choice(
             string.ascii_uppercase + string.digits) for _ in range(24))
@@ -326,6 +334,11 @@ class Match(db.Model):
 
         else:
             return (self.team1_score, self.team2_score)
+
+    def get_scores(self):
+        scores = list()
+        for mapstat in self.map_stats.all():
+            scores.append((mapstat.team1_score, mapstat.team2_score))
 
     def send_to_server(self):
         server = GameServer.query.get(self.server_id)
@@ -422,6 +435,16 @@ class Match(db.Model):
     def __repr__(self):
         return 'Match(id={})'.format(self.id)
 
+TournamentTeam = db.Table('tournament_team', db.Model.metadata,
+    db.Column('tournament_id', db.Integer, db.ForeignKey('tournament.id')),
+    db.Column('team_id', db.Integer, db.ForeignKey('team.id'))
+)
+
+TournamentGameServer = db.Table('tournament_gameserver', db.Model.metadata,
+    db.Column('tournament_id', db.Integer, db.ForeignKey('tournament.id')),
+    db.Column('game_server_id', db.Integer, db.ForeignKey('game_server.id'))
+)
+
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -434,14 +457,20 @@ class Tournament(db.Model):
     url = db.Column(db.String(60))
     challonge_id = db.Column(db.Integer)
     challonge_data = db.Column(db.PickleType)
-    participants = db.relationship('Team', backref='tournament', lazy='dynamic')
+    participants = db.relationship('Team', secondary=TournamentTeam, backref='tournaments', lazy='dynamic')
     matches = db.relationship('Match', backref='tournament', lazy='dynamic')
+    serverpool = db.relationship('GameServer', secondary=TournamentGameServer, backref='tournaments', lazy='dynamic')
+    veto_mappool = db.Column(db.String(160))
 
     @staticmethod
-    def create(user, name, url, challonge_id=None, challonge_data=None):
+    def create(user, name, url, veto_mappool, serverpool=None, challonge_id=None, challonge_data=None):
         rv = Tournament()
         rv.user_id = user.id
+        rv.url = url
         rv.name = name
+        rv.veto_mappool = ' '.join(veto_mappool)
+        if serverpool:
+            rv.serverpool.extend(serverpool)
         rv.challonge_id = challonge_id
         rv.challonge_data = challonge_data
         db.session.add(rv)
@@ -461,6 +490,12 @@ class Tournament(db.Model):
 
     def get_user(self):
         return User.query.get(self.user_id)
+
+    def get_available_server(self):
+        for server in self.serverpool.all():
+            if not server.in_use:
+                return server
+        return None
 
     def __repr__(self):
         return 'Tournament(id={})'.format(self.id)

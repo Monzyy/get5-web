@@ -42,18 +42,13 @@
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-  <div class="panel panel-primary">
-    <div class="panel-heading">Command response</div>
-
-    <div class="panel-body">
-      {% for message in messages %}
-      <b>{{ message[1] }}</b>
-      <br>
+  <div class="container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+          {{ message }}
+      </div>
       {% endfor %}
-    </div>
-
   </div>
-  <br>
   {% endif %}
 {% endwith %}
 
@@ -86,6 +81,8 @@
           <li role="separator" class="divider"></li>
           <li><a id="backup_manager" href="{{request.path}}/backup">Load a backup file</a></li>
           <li><a href="{{request.path}}/cancel">Cancel match</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="{{request.path}}/start">Start match</a></li>
         </ul>
       </div>
       {% endif %}
