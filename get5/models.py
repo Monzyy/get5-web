@@ -83,7 +83,7 @@ class GameServer(db.Model):
             return self.get_hostport()
 
     def __repr__(self):
-        return 'GameServer({})'.format(self.get_hostport())
+        return self.get_display()
 
 
 class Team(db.Model):

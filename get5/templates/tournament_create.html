@@ -1,11 +1,7 @@
-{% from "macros.html" import show_flashed_messages %}
-
 {% extends "layout.html" %}
 {% block content %}
 
 <div id="content">
-
- {{ show_flashed_messages() }}
 
   <form role="form" action="" method="post" class="form-horizontal">
 
@@ -43,7 +39,6 @@
       </div>
 
       <br>
-
       <div class="form-group">
         {{ form.serverpool.label(class="col-sm-2 control-label", style="height:50px") }}
         <div class="col-sm-offset-2">
@@ -56,7 +51,6 @@
           {% endfor %}
         </div>
       </div>
-
       <br>
 
       <div class="form-group">

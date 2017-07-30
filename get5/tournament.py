@@ -12,6 +12,7 @@ from wtforms import (
     Form, widgets, validators,
     StringField, RadioField,
     SelectField, ValidationError, SelectMultipleField)
+from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 
 tournament_blueprint = Blueprint('tournament', __name__)
 
@@ -21,11 +22,8 @@ class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 
-def serverpool_validator(form, field):
-    if not form.serverpool.data:
-        raise ValidationError(
-            'You must have at least 1 server in the serverpool')
-
+def available_servers():
+    return GameServer.query.all()
 
 class TournamentForm(Form):
     tournament_name = StringField('Tournament name',
@@ -33,7 +31,7 @@ class TournamentForm(Form):
                                   validators=[validators.Length(min=-1, max=Tournament.name.type.length)])
 
     tournament_url = StringField('Tournament url',
-                                 default=config_setting('BRAND') + '_tournament',
+                                 default=config_setting('BRAND').replace('.', '') + '_tournament',
                                  validators=[validators.Length(min=-1,
                                                                max=Tournament.url.type.length)])
 
@@ -45,7 +43,9 @@ class TournamentForm(Form):
                                  ('double elimination', 'double elimination'.title()),
                                  ('round robin', 'round robin'.title()),
                              ])
-    serverpool = MultiCheckboxField('Server pool')
+
+    serverpool = QuerySelectMultipleField('Server pool', query_factory=available_servers,
+                                          option_widget=widgets.CheckboxInput())
 
     mapchoices = config_setting('MAPLIST')
     default_mapchoices = config_setting('DEFAULT_MAPLIST')
@@ -56,31 +56,12 @@ class TournamentForm(Form):
                                       validators=[validators.required()],
                                       )
 
-    def add_servers(self, user):
-        if self.serverpool.choices is None:
-            self.serverpool.choices = []
-
-        server_ids = []
-        for s in user.servers:
-            server_ids.append(s.id)
-
-        for s in GameServer.query.filter_by(public_server=True):
-            if s.id not in server_ids:
-                server_ids.append(s.id)
-
-        server_tuples = []
-        for server_id in server_ids:
-            server_tuples.append((server_id, GameServer.query.get(server_id).get_display()))
-
-        self.serverpool.choices += server_ids
-
 @tournament_blueprint.route('/tournament/create', methods=['GET', 'POST'])
 def tournament_create():
     if not g.user:
         return redirect('/login')
 
     form = TournamentForm(request.form)
-    form.add_servers(g.user)
 
     if request.method == 'POST':
         num_tournaments = g.user.tournaments.count()
@@ -94,7 +75,6 @@ def tournament_create():
             mock = config_setting('TESTING')
 
             reply = None
-            serverpool=None
             if mock:
                 reply['id'] = 1234
                 message = 'Success'
@@ -104,20 +84,20 @@ def tournament_create():
                                                     url=form.data['tournament_url'])
                     reply = reply['tournament']
                 except challonge.ChallongeException as e:
-                    flash(e.message)
+                    flash(str(e))
 
 
             if reply['id']:
                 t = Tournament.create(g.user, reply['name'], reply['full_challonge_url'],
                                       challonge_id=reply['id'], challonge_data=reply,
                                       veto_mappool=form.data['veto_mappool'],
-                                      serverpool=serverpool)
+                                      serverpool=form.serverpool.data)
 
                 db.session.commit()
                 app.logger.info('User {} created tournament {} - {} url {}'
                                 .format(g.user.id, t.id, t.name, t.url))
 
-                return redirect('/mytournaments')
+                return redirect(url_for('tournament', tournamentid=t.id))
         else:
             get5.flash_errors(form)
 
