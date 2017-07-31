@@ -55,7 +55,7 @@
                     <table class="table">
                       {% for match in match_list %}
                       <tr>
-                          <td><a href="/match/{{match.id}}">#{{ match.title }} - {{ match.get_status_string() }}</a></td>
+                          <td><a href="/match/{{match.id}}">{{ match.title }} - {{ match.get_status_string() }}</a></td>
                           <td class="text-center">{{ match.get_vs_string() }}</td>
                       </tr>
                       {% else %}
@@ -70,7 +70,7 @@
                       {% for server in serverpool %}
                       <tr>
                           <td><a href="/server/{{server.id}}">{{ server.get_display() }}</a></td>
-                          <td>{{ server.in_use }}</td>
+                          <td>{{ 'In use' if server.in_use else 'Free' }}</td>
                       </tr>
                       {% else %}
                       <tr><td>None yet ...</td></tr>

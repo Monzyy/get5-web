@@ -201,7 +201,8 @@ def flash_errors(form):
         for error in errors:
             flash('Error in the %s field - %s' % (
                 getattr(form, field).label.text,
-                error))
+                error),
+                  'error')
 
 
 @app.route('/user/<int:userid>', methods=['GET'])

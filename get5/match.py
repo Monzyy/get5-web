@@ -380,21 +380,6 @@ def match_adduser(matchid):
     return redirect('/match/{}'.format(matchid))
 
 
-# @match_blueprint.route('/match/<int:matchid>/sendconfig')
-# def match_sendconfig(matchid):
-#     match = Match.query.get_or_404(matchid)
-#     admintools_check(g.user, match)
-#     server = GameServer.query.get_or_404(match.server_id)
-
-#     try:
-#         server.send_rcon_command('mp_unpause_match', raise_errors=True)
-#         flash('Unpaused match')
-#     except util.RconError as e:
-#         flash('Failed to send unpause command: ' + str(e))
-
-#     return redirect('/match/{}'.format(matchid))
-
-
 @match_blueprint.route('/match/<int:matchid>/backup', methods=['GET'])
 def match_backup(matchid):
     match = Match.query.get_or_404(matchid)

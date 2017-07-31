@@ -11,7 +11,7 @@ import datetime
 
 api_blueprint = Blueprint('api', __name__)
 
-chall = challonge.ChallongeClient()
+chall_worker = challonge.ChallongeWorker()
 
 _matchid_re = re.compile('/match/(\d*)/.*')
 
@@ -72,21 +72,18 @@ def match_finish(matchid):
         server.in_use = False
 
     db.session.commit()
-    try:
-        tournament = Tournament.query.get(match.tournament_id)
-        scores = match.get_scores()
-        if scores:
-            scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in scores])
-        else:
-            scores_csv = '0-0'
-        if match.winner:
-            winner_team = Team.query.get(match.winner).challonge_id
-        else:
-            winner_team = 'tie'
-        chall.update_match(tournament.challonge_id, match.challonge_id,
-                           scores_csv=scores_csv, winner_id=winner_team)
-    except challonge.ChallongeException as e:
-        pass
+    tournament = Tournament.query.get(match.tournament_id)
+    scores = match.get_scores()
+    if scores:
+        scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in scores])
+    else:
+        scores_csv = '0-0'
+    if match.winner:
+        winner_team = Team.query.get(match.winner).challonge_id
+    else:
+        winner_team = 'tie'
+    chall_worker.task_queue.put(('update_match', (tournament.challonge_id, match.challonge_id), {"scores_csv": scores_csv, "winner_id":winner_team}))
+
     app.logger.info('Finished match {}, winner={}'.format(match, winner))
 
     return 'Success'
@@ -124,6 +121,8 @@ def match_map_update(matchid, mapnumber):
             map_stats.team1_score = t1
             map_stats.team2_score = t2
             db.session.commit()
+            tournament = Tournament.query.get(match.tournament_id)
+            chall_worker.task_queue.put(('update_match', (tournament.challonge_id, match.challonge_id), {"scores_csv": "{}-{}".format(t1,t2)}))
     else:
         return 'Failed to find map stats object', 400
 

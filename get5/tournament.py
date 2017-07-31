@@ -97,7 +97,7 @@ def tournament_create():
                 app.logger.info('User {} created tournament {} - {} url {}'
                                 .format(g.user.id, t.id, t.name, t.url))
 
-                return redirect(url_for('tournament', tournamentid=t.id))
+                return redirect(url_for('tournament.tournament', tournamentid=t.id))
         else:
             get5.flash_errors(form)
 
@@ -171,10 +171,9 @@ def _create_and_add_participant(tournament, participant):
                        flag=None, logo=None, auths=None)
     db.session.commit()
     try:
-        chall.update_participant_misc(tournament_id=tournament.challonge_id,
-                                      id=participant['id'], misc=team.id)
+        chall.update_participant_misc(tournament.challonge_id, participant['id'], team.id)
     except challonge.ChallongeException as e:
-        flash(e.message)
+         flash(e)
     else:
         tournament.participants.append(team)
         db.session.commit()

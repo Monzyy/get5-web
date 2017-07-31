@@ -1,5 +1,7 @@
 from requests import request, HTTPError
 import itertools
+from threading import Thread
+import queue
 
 from get5 import config_setting
 
@@ -123,3 +125,21 @@ class ChallongeClient(object):
     def update_match(self, tournament_id, id, **kwargs):
         return self.fetch('put', 'tournaments/{}/matches/{}'.format(tournament_id, id),
                           params_prefix='match', **kwargs)
+
+
+class ChallongeWorker(Thread):
+    def __init__(self):
+        super().__init__()
+        self.task_queue = queue.Queue()
+        self.client = ChallongeClient()
+        self.start()
+
+    def run(self):
+        while True:
+            func, args, kwargs = self.task_queue.get()
+            try:
+                getattr(self.client, func)(*args, *kwargs)
+            except Exception as e:
+                print(e)
+            finally:
+                self.task_queue.task_done()

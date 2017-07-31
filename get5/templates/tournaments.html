@@ -18,7 +18,7 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>ID</th>
+     {# <th>ID</th> #}
         <th>Name</th>
         <th></th>
         <th></th>
@@ -28,14 +28,10 @@
 
     {% for tournament in tournaments.items %}
       <tr>
-        <td><a href="/tournament/{{tournament.id}}"> {{tournament.id}}</a></td>
-
-        <td>
-          {{ tournament.name }}
-        </td>
-
-        <td><a href="{{ tournament.url }}">challonge</a></td>
-        <td><a href="{{ tournament.challonge_data.sign_up_url }}">sign up here</a></td>
+     {# <td><a href="/tournament/{{tournament.id}}">{{tournament.id}}</a></td> #}
+        <td><a href="/tournament/{{tournament.id}}">{{ tournament.name }}</a></td>
+        <td><a href="{{ tournament.url }}">challonge link</a></td>
+        <td><a href="{{ tournament.challonge_data.sign_up_url }}">sign up link</a></td>
       </tr>
     {% endfor %}
 
