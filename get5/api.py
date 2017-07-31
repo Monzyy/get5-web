@@ -74,10 +74,17 @@ def match_finish(matchid):
     db.session.commit()
     try:
         tournament = Tournament.query.get(match.tournament_id)
-        scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in match.get_scores()])
-        winner_team = Team.query.get(match.winner)
+        scores = match.get_scores()
+        if scores:
+            scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in scores])
+        else:
+            scores_csv = '0-0'
+        if match.winner:
+            winner_team = Team.query.get(match.winner).challonge_id
+        else:
+            winner_team = 'tie'
         chall.update_match(tournament.challonge_id, match.challonge_id,
-                           scores_csv=scores_csv, winner_id=winner_team.challonge_id)
+                           scores_csv=scores_csv, winner_id=winner_team)
     except challonge.ChallongeException as e:
         pass
     app.logger.info('Finished match {}, winner={}'.format(match, winner))
