@@ -132,7 +132,7 @@ def tournament_sync(tournamentid):
         reply = chall.tournament(tournament.challonge_id, include_participants=True, include_matches=True)
         reply = reply['tournament']
     except challonge.ChallongeException as e:
-        flash(e.message)
+        flash(str(e), 'danger')
     else:
         tournament.name = reply['name']
         tournament.url = reply['full_challonge_url']

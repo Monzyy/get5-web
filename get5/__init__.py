@@ -22,11 +22,6 @@ import sys
 import logging
 import logging.handlers
 
-from . import logos
-from . import steamid
-from . import util
-from . import config
-
 from flask import (Flask, render_template, flash, jsonify,
                    request, g, session, redirect)
 
@@ -34,6 +29,12 @@ import flask_cache
 import flask_sqlalchemy
 import flask_openid
 import flask_limiter
+
+from . import logos
+from . import steamid
+from . import util
+from . import config
+
 
 # Import the Flask Framework
 app = Flask(__name__, instance_relative_config=True)
