@@ -7,9 +7,9 @@
 
   <h1>
   {% if my_tournaments %}
-  Your tournamentes
+  Your tournaments
   {% elif all_tournaments %}
-  All tournamentes
+  All tournaments
   {% else %}
   tournaments for <a href="/user/{{ tournament_owner.id }}"> {{ tournament_owner.name }}</a>
   {% endif%}

@@ -50,11 +50,9 @@ class TournamentForm(Form):
     mapchoices = config_setting('MAPLIST')
     default_mapchoices = config_setting('DEFAULT_MAPLIST')
     veto_mappool = MultiCheckboxField('Map pool',
-                                      choices=[(
-                                          name, util.format_mapname(name)) for name in mapchoices],
+                                      choices=[(name, util.format_mapname(name)) for name in mapchoices],
                                       default=default_mapchoices,
-                                      validators=[validators.required()],
-                                      )
+                                      validators=[validators.required()])
 
 @tournament_blueprint.route('/tournament/create', methods=['GET', 'POST'])
 def tournament_create():
@@ -74,9 +72,11 @@ def tournament_create():
         if form.validate():
             mock = config_setting('TESTING')
 
-            reply = None
+            reply = {}
             if mock:
                 reply['id'] = 1234
+                reply['name'] = "Testy McTestTournament"
+                reply['full_challonge_url'] = "http://www.test.mctest/test"
                 message = 'Success'
             else:
                 try:
@@ -164,6 +164,7 @@ def sync_participants(tournament, participants):
             else:
                 _create_and_add_participant(tournament, participant)
 
+
 def _create_and_add_participant(tournament, participant):
     team = Team.create(g.user, name=participant['name'],
                        tag=participant['display_name'],
@@ -178,6 +179,7 @@ def _create_and_add_participant(tournament, participant):
         tournament.participants.append(team)
         db.session.commit()
 
+
 def sync_matches(tournament, challonge_matches):
     t_match_ids = {m.challonge_id for m in tournament.matches.all()}
     c_match_ids = {m['id'] for m in challonge_matches}
@@ -189,6 +191,7 @@ def sync_matches(tournament, challonge_matches):
     for match_dict in challonge_matches:
         if match_dict['id'] not in t_match_ids:
             _create_and_add_match(tournament, match_dict)
+
 
 def _create_and_add_match(tournament, match_dict):
     if match_dict['player1_id'] is not None and match_dict['player2_id'] is not None:

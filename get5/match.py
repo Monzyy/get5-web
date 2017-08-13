@@ -290,13 +290,13 @@ def match_cancel(matchid):
     server = GameServer.query.get(match.server_id)
     if server:
         server.in_use = False
-
+   
     db.session.commit()
 
     try:
         server.send_rcon_command('get5_endmatch', raise_errors=True)
     except util.RconError as e:
-        flash('Failed to cancel match: ' + str(e), 'danger')
+        flash('Failed to cancel match on server: ' + str(e), 'danger')
 
     return redirect('/mymatches')
 
