@@ -65,7 +65,12 @@
                 </div>
                 {% if admin_access %}
                 <div class="panel panel-default">
-                  <div class="panel-heading">Server pool</div>
+                    <div class="panel-heading">
+		        Server pool 
+			    <div class="pull-right">
+				<a href="/tournament/{{tournament.id}}/add_servers" class="btn">Add servers</a>
+			    </div>
+		    </div>
                     <table class="table">
                       {% for server in serverpool %}
                       <tr>

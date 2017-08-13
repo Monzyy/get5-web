@@ -341,6 +341,7 @@ class Match(db.Model):
         scores = list()
         for mapstat in self.map_stats.all():
             scores.append((mapstat.team1_score, mapstat.team2_score))
+        return scores
 
     def send_to_server(self):
         server = GameServer.query.get(self.server_id)

@@ -25,6 +25,10 @@ class MultiCheckboxField(SelectMultipleField):
 def available_servers():
     return GameServer.query.all()
 
+class AddServers(Form):
+    serverpool = QuerySelectMultipleField('Server pool', query_factory=available_servers,
+                                          option_widget=widgets.CheckboxInput())
+
 class TournamentForm(Form):
     tournament_name = StringField('Tournament name',
                                   default=config_setting('BRAND') + ' tournament',
@@ -294,3 +298,24 @@ def mytournaments():
         return redirect('/login')
 
     return redirect('/tournaments/' + str(g.user.id))
+
+
+@tournament_blueprint.route('/tournament/<int:tournamentid>/add_servers', methods=['GET', 'POST'])
+def tournament_add_servers(tournamentid):
+    tournament = Tournament.query.get_or_404(tournamentid)
+    admintools_check(g.user, tournament)
+
+    form = AddServers(request.form)
+
+    if request.method == 'POST':
+        if form.validate():
+            tournament.serverpool = form.serverpool.data
+
+            db.session.commit()
+
+            return redirect(url_for('tournament.tournament', tournamentid=tournament.id))
+        else:
+            get5.flash_errors(form)
+
+    return render_template('tournament_add_servers.html', form=form, user=g.user)
+

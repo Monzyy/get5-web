@@ -77,7 +77,7 @@ def match_finish(matchid):
     if scores:
         scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in scores])
     else:
-        scores_csv = '0-0'
+        scores_csv = '{}-{}'.format(match.team1_score, match.team2_score)
     if match.winner:
         winner_team = Team.query.get(match.winner).challonge_id
     else:
