@@ -112,7 +112,6 @@ def match_create():
             mock = config_setting('TESTING')
             
             server = form.server.data
-            import q; q(server)
 
             match_on_server = g.user.matches.filter_by(
                 server_id=server.id, end_time=None, cancelled=False).first()
@@ -194,6 +193,23 @@ def match(matchid):
                            map_stat_list=map_stat_list)
 
 
+
+def admintools_check(user, match, can_be_cancelled=False):
+    if user is None:
+        raise BadRequestError('You do not have access to this page')
+
+    grant_admin_access = user.admin and get5.config_setting(
+        'ADMINS_ACCESS_ALL_MATCHES')
+    if user.id != match.user_id and not grant_admin_access:
+        raise BadRequestError('You do not have access to this page')
+
+    if match.finished():
+        raise BadRequestError('Match already finished')
+
+    if match.cancelled and not can_be_cancelled:
+        raise BadRequestError('Match is cancelled')
+
+
 @match_blueprint.route('/match/<int:matchid>/edit', methods=['GET', 'POST'])
 def match_edit(matchid):
     match = Match.query.get_or_404(matchid)
@@ -241,22 +257,6 @@ def match_config(matchid):
     match = Match.query.get_or_404(matchid)
     dict = match.build_match_dict()
     return jsonify(dict)
-
-
-def admintools_check(user, match):
-    if user is None:
-        raise BadRequestError('You do not have access to this page')
-
-    grant_admin_access = user.admin and get5.config_setting(
-        'ADMINS_ACCESS_ALL_MATCHES')
-    if user.id != match.user_id and not grant_admin_access:
-        raise BadRequestError('You do not have access to this page')
-
-    if match.finished():
-        raise BadRequestError('Match already finished')
-
-    if match.cancelled:
-        raise BadRequestError('Match is cancelled')
 
 
 @match_blueprint.route('/match/<int:matchid>/start')
@@ -308,6 +308,20 @@ def match_cancel(matchid):
         server.send_rcon_command('get5_endmatch', raise_errors=True)
     except (AttributeError, util.RconError) as e:
         flash('Failed to cancel match on server: ' + str(e), 'danger')
+
+    return redirect('/mymatches')
+
+
+@match_blueprint.route('/match/<int:matchid>/delete')
+def match_delete(matchid):
+    match = Match.query.get_or_404(matchid)
+    admintools_check(g.user, match, can_be_cancelled=True)
+    
+    if match.cancelled:
+        Match.query.filter_by(id=matchid).delete()
+        db.session.commit()
+    else:
+        flash('You cannot delete matches that are not canceled!', 'danger')
 
     return redirect('/mymatches')
 

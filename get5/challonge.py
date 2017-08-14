@@ -16,7 +16,6 @@ class ChallongeClient(object):
         """Fetch the given uri and return the contents of the response."""
         url = "{}{}.json".format(BASE_URL, uri)
         params = self._prepare_params(params, params_prefix)
-        import q; q(method); q(uri); q(params)
         if method.lower() == 'get':
             params['api_key'] = config_setting('CHALLONGE_API_KEY')
             r_data = {"params": params}
