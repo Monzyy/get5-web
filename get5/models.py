@@ -264,18 +264,23 @@ class Match(db.Model):
                max_maps, skip_veto, title, veto_mappool, challonge_id=None, server_id=None):
         rv = Match()
         rv.user_id = user.id
-        rv.team1_id = team1_id
-        rv.team2_id = team2_id
-        rv.skip_veto = skip_veto
-        rv.title = title
-        rv.veto_mappool = ' '.join(veto_mappool)
-        rv.server_id = server_id
-        rv.challonge_id = challonge_id
-        rv.max_maps = max_maps
+        rv.set_data(team1_id, team2_id, team1_string, team2_string,
+                    max_maps, skip_veto, title, veto_mappool, challonge_id, server_id)
         rv.api_key = ''.join(random.SystemRandom().choice(
             string.ascii_uppercase + string.digits) for _ in range(24))
         db.session.add(rv)
         return rv
+
+    def set_data(self, team1_id, team2_id, team1_string, team2_string,
+                 max_maps, skip_veto, title, veto_mappool, challonge_id, server_id):
+        self.team1_id = team1_id
+        self.team2_id = team2_id
+        self.skip_veto = skip_veto
+        self.title = title
+        self.veto_mappool = ' '.join(veto_mappool)
+        self.server_id = server_id
+        self.challonge_id = challonge_id
+        self.max_maps = max_maps
 
     def get_status_string(self, show_winner=True):
         if self.pending():
@@ -342,6 +347,9 @@ class Match(db.Model):
         for mapstat in self.map_stats.all():
             scores.append((mapstat.team1_score, mapstat.team2_score))
         return scores
+
+    def get_format(self):
+        return "Bo{}".format(self.max_maps)
 
     def send_to_server(self):
         server = GameServer.query.get(self.server_id)

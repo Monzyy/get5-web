@@ -1,20 +1,16 @@
-{% from "macros.html" import show_flashed_messages %}
-
 {% extends "layout.html" %}
 {% block content %}
 
 <div id="content">
-
- {{ show_flashed_messages() }}
 
   <form role="form" action="" method="post" class="form-horizontal">
 
       {{ form.csrf_token }}
 
       <div class="form-group">
-        {{ form.server_id.label(class="col-sm-2 control-label") }}
+        {{ form.server.label(class="col-sm-2 control-label") }}
           <div class="col-sm-4">
-            {{ form.server_id(class="form-control input-sm") }}
+            {{ form.server(class="form-control input-sm") }}
           </div>
           <a href="/server/create" class="btn btn-primary">Create a server</a>
       </div>
@@ -22,14 +18,14 @@
       <br>
 
       <div class="form-group">
-        {{ form.team1_id.label(class="col-sm-2 control-label") }}
+        {{ form.team1.label(class="col-sm-2 control-label") }}
           <div class="col-sm-4">
-            {{ form.team1_id(class="form-control input-sm") }}
+            {{ form.team1(class="form-control input-sm") }}
           </div>
           <a href="/team/create" class="btn btn-primary">Create a team</a>
       </div>
 
-      {% if match_text_option %}
+      {% if match_text_option and not edit %}
       <div class="form-group">
       {{ form.team1_string.label(class="col-sm-2 control-label") }}
         <div class="col-sm-4">
@@ -41,13 +37,13 @@
       {% endif %}
 
       <div class="form-group">
-        {{ form.team2_id.label(class="col-sm-2 control-label") }}
+        {{ form.team2.label(class="col-sm-2 control-label") }}
           <div class="col-sm-4">
-            {{ form.team2_id(class="form-control input-sm") }}
+            {{ form.team2(class="form-control input-sm") }}
           </div>
       </div>
 
-      {% if match_text_option %}
+      {% if match_text_option and not edit  %}
       <div class="form-group">
       {{ form.team2_string.label(class="col-sm-2 control-label") }}
         <div class="col-sm-4">
@@ -81,7 +77,7 @@
       </div>
 
       <br>
-
+      {% if not edit %}
       <div class="form-group">
         {{ form.veto_mappool.label(class="col-sm-2 control-label", style="height:50px") }}
         <div class="col-sm-offset-2">
@@ -94,10 +90,17 @@
           {% endfor %}
         </div>
       </div>
+      {% endif %}
 
-      <div class="input submit col-sm-offset-1">
-        <input type="submit" class="btn btn-primary" value="Create Match">
-      </div>
+      {% if edit %}
+    <div class="input submit col-sm-offset-1">
+      <input type="submit" class="btn btn-primary" value="Update Match">
+    </div>
+    {% else %}
+    <div class="input submit col-sm-offset-1">
+      <input type="submit" class="btn btn-primary" value="Create Match">
+    </div>
+    {% endif %}
 
       <br>
 
@@ -106,9 +109,9 @@
 </div>
 
 <script>
-$("#server_id").chosen()
-$("#team1_id").chosen()
-$("#team2_id").chosen()
+$("#server").chosen()
+$("#team1").chosen()
+$("#team2").chosen()
 </script>
 
 <script>

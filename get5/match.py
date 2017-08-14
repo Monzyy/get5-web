@@ -11,6 +11,7 @@ from wtforms import (
     Form, widgets, validators,
     StringField, RadioField,
     SelectField, ValidationError, SelectMultipleField)
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 match_blueprint = Blueprint('match', __name__)
 
@@ -21,7 +22,7 @@ class MultiCheckboxField(SelectMultipleField):
 
 
 def different_teams_validator(form, field):
-    if form.team1_id.data == form.team2_id.data:
+    if form.team1.data == form.team2.data:
         raise ValidationError('Teams cannot be equal')
 
 
@@ -40,10 +41,15 @@ def mappool_validator(form, field):
         raise ValidationError(
             'You must have at least {} maps selected to do a Bo{}'.format(max_maps, max_maps))
 
+def server_query_factory():
+    return GameServer.query.filter((GameServer.public_server == True) | (GameServer.user_id == g.user.id))
+
+def team_query_factory():
+    return Team.query.filter((Team.public_team == True) | (Team.user_id == g.user.id))
 
 class MatchForm(Form):
-    server_id = SelectField('Server', coerce=int,
-                            validators=[validators.required()])
+    server = QuerySelectField('Server', validators=[validators.required()],
+                              query_factory=server_query_factory)
 
     match_title = StringField('Match title text',
                               default='Map {MAPNUMBER} of {MAXMAPS}',
@@ -61,16 +67,16 @@ class MatchForm(Form):
                                  ('bo7', 'Bo7 with map vetoes'),
                              ])
 
-    team1_id = SelectField('Team 1', coerce=int,
-                           validators=[validators.required()])
+    team1 = QuerySelectField('Team 1', get_label='name', validators=[validators.required()],
+                             query_factory=team_query_factory)
 
     team1_string = StringField('Team 1 title text',
                                default='',
                                validators=[validators.Length(min=-1,
                                                              max=Match.team1_string.type.length)])
 
-    team2_id = SelectField('Team 2', coerce=int,
-                           validators=[validators.required(), different_teams_validator])
+    team2 = QuerySelectField('Team 2', get_label='name', query_factory=team_query_factory,
+                             validators=[validators.required(), different_teams_validator])
 
     team2_string = StringField('Team 2 title text',
                                default='',
@@ -86,44 +92,6 @@ class MatchForm(Form):
                                       validators=[mappool_validator],
                                       )
 
-    def add_teams(self, user):
-        if self.team1_id.choices is None:
-            self.team1_id.choices = []
-
-        if self.team2_id.choices is None:
-            self.team2_id.choices = []
-
-        team_ids = [team.id for team in user.teams]
-        for team in Team.query.filter_by(public_team=True):
-            if team.id not in team_ids:
-                team_ids.append(team.id)
-
-        team_tuples = []
-        for teamid in team_ids:
-            team_tuples.append((teamid, Team.query.get(teamid).name))
-
-        self.team1_id.choices += team_tuples
-        self.team2_id.choices += team_tuples
-
-    def add_servers(self, user):
-        if self.server_id.choices is None:
-            self.server_id.choices = []
-
-        server_ids = []
-        for s in user.servers:
-            if not s.in_use:
-                server_ids.append(s.id)
-
-        for s in GameServer.query.filter_by(public_server=True):
-            if not s.in_use and s.id not in server_ids:
-                server_ids.append(s.id)
-
-        server_tuples = []
-        for server_id in server_ids:
-            server_tuples.append((server_id, GameServer.query.get(server_id).get_display()))
-
-        self.server_id.choices += server_tuples
-
 
 @match_blueprint.route('/match/create', methods=['GET', 'POST'])
 def match_create():
@@ -131,8 +99,6 @@ def match_create():
         return redirect('/login')
 
     form = MatchForm(request.form)
-    form.add_teams(g.user)
-    form.add_servers(g.user)
 
     if request.method == 'POST':
         num_matches = g.user.matches.count()
@@ -144,8 +110,9 @@ def match_create():
 
         if form.validate():
             mock = config_setting('TESTING')
-
-            server = GameServer.query.get_or_404(form.data['server_id'])
+            
+            server = form.server.data
+            import q; q(server)
 
             match_on_server = g.user.matches.filter_by(
                 server_id=server.id, end_time=None, cancelled=False).first()
@@ -176,10 +143,10 @@ def match_create():
                     max_maps = 1
 
                 match = Match.create(
-                    g.user, form.data['team1_id'], form.data['team2_id'],
+                    g.user, form.team1.data.id, form.team2.data.id,
                     form.data['team1_string'], form.data['team2_string'],
                     max_maps, skip_veto, form.data['match_title'],
-                    form.data['veto_mappool'], form.data['server_id'])
+                    form.data['veto_mappool'], server_id=server.id)
 
                 # Save plugin version data if we have it
                 if json_reply and 'plugin_version' in json_reply:
@@ -227,12 +194,53 @@ def match(matchid):
                            map_stat_list=map_stat_list)
 
 
+@match_blueprint.route('/match/<int:matchid>/edit', methods=['GET', 'POST'])
+def match_edit(matchid):
+    match = Match.query.get_or_404(matchid)
+    admintools_check(g.user, match)
+
+    form = MatchForm(
+        request.form,
+        server=GameServer.query.get(match.server_id),
+        series_type="bo{}".format(match.max_maps),
+        team1=Team.query.get(match.team1_id),
+        team2=Team.query.get(match.team2_id),)
+
+    if request.method == 'GET':
+        return render_template('match_create.html', user=g.user, form=form,
+                               edit=True, is_admin=g.user.admin)
+
+    elif request.method == 'POST':
+        if request.method == 'POST':
+            if form.validate() or True: # TODO form validation on edit
+                skip_veto = 'preset' in form.data['series_type']
+                try:
+                    max_maps = int(form.data['series_type'][2])
+                except ValueError:
+                    max_maps = 1
+                data = form.data
+                update_dict = {
+                    'team1_id': form.team1.data.id,
+                    'team2_id': form.team2.data.id,
+                    'max_maps': max_maps,
+                    'server_id': form.server.data.id,
+                }
+                Match.query.filter_by(id=matchid).update(update_dict)
+                db.session.commit()
+                return redirect(url_for('match.match', matchid=matchid))
+            else:
+                get5.flash_errors(form)
+
+    return render_template('match_create.html', user=g.user, form=form, edit=True,
+                           is_admin=g.user.admin)
+
+
+
 @match_blueprint.route('/match/<int:matchid>/config')
 def match_config(matchid):
     match = Match.query.get_or_404(matchid)
     dict = match.build_match_dict()
-    json_text = jsonify(dict)
-    return json_text
+    return jsonify(dict)
 
 
 def admintools_check(user, match):
@@ -249,6 +257,7 @@ def admintools_check(user, match):
 
     if match.cancelled:
         raise BadRequestError('Match is cancelled')
+
 
 @match_blueprint.route('/match/<int:matchid>/start')
 def match_start(matchid):
@@ -287,15 +296,17 @@ def match_cancel(matchid):
     admintools_check(g.user, match)
 
     match.cancelled = True
-    server = GameServer.query.get(match.server_id)
-    if server:
-        server.in_use = False
+    server = None
+    if match.server_id:
+        server = GameServer.query.get(match.server_id)
+        if server:
+            server.in_use = False
    
     db.session.commit()
 
     try:
         server.send_rcon_command('get5_endmatch', raise_errors=True)
-    except util.RconError as e:
+    except (AttributeError, util.RconError) as e:
         flash('Failed to cancel match on server: ' + str(e), 'danger')
 
     return redirect('/mymatches')

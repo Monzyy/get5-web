@@ -22,11 +22,11 @@ class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 
-def available_servers():
-    return GameServer.query.all()
+def server_query_factory():
+    GameServer.query.filter((GameServer.public_server == True) | (GameServer.user_id == g.user.id))
 
 class AddServers(Form):
-    serverpool = QuerySelectMultipleField('Server pool', query_factory=available_servers,
+    serverpool = QuerySelectMultipleField('Server pool', query_factory=server_query_factory,
                                           option_widget=widgets.CheckboxInput())
 
 class TournamentForm(Form):
@@ -48,7 +48,7 @@ class TournamentForm(Form):
                                  ('round robin', 'round robin'.title()),
                              ])
 
-    serverpool = QuerySelectMultipleField('Server pool', query_factory=available_servers,
+    serverpool = QuerySelectMultipleField('Server pool', query_factory=server_query_factory,
                                           option_widget=widgets.CheckboxInput())
 
     mapchoices = config_setting('MAPLIST')
