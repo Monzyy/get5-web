@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div id="content">
+
+  <form role="form" action="" method="post" class="form-horizontal">
+
+      {{ form.csrf_token }}
+
+      <div class="form-group">
+        {{ form.serverpool.label(class="col-sm-2 control-label", style="height:50px") }}
+        <div class="col-sm-offset-2">
+          {% for subfield in form.serverpool %}
+          <tr>
+            <td>{{ subfield }}</td>
+            <td>{{ subfield.label }}</td>
+            <br>
+          </tr>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="input submit col-sm-offset-1">
+        <input type="submit" class="btn btn-primary" value="Add Servers">
+      </div>
+
+      <br>
+
+  </form>
+
+</div>
+
+<script>
+  $(document).ready(function () {
+  $("#tournament_create").parent().addClass("active"); })
+</script>
+
+{% endblock %}
