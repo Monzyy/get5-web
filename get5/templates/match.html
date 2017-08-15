@@ -98,40 +98,32 @@
       This match is pending start.
     </div>
   </div>
-  {% else %}
+  {% elif match.live() %}
   <div class="panel panel-success" role="alert">
     <div class="panel-body">
       This match is live!
     </div>
   </div>
-  {% endif %}
-  
-  {% if match.start_time is not none %}
-  <div class="well well-sm">
-    <p>Started at {{ match.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
-    {% if match.end_time is not none %}   
-    <p>Ended at {{ match.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
-    {% endif %}
-    {% else %}
+  {% else %}
+  <div class="panel panel-info" role="alert">
+    <div class="panel-body">
+      This match has ended.
+    </div>
   </div>
   {% endif %}
+  
   
   {% for map_stats in map_stat_list %}
   <br>
   <div class="panel panel-primary">
     <div class="panel-heading">
-      Map {{map_stats.map_number + 1}}: {{ map_stats.map_name }},
-      {{team1.name}} {{ score_symbol(map_stats.team1_score, map_stats.team2_score) }} {{team2.name}},
-      {{map_stats.team1_score}}:{{map_stats.team2_score}}
+      <h2 class="panel-title">
+      Map {{ map_stats.map_number + 1 }}: {{ map_stats.map_name }}&nbsp;&nbsp;|&nbsp;&nbsp;
+      {{team1.name}} {{map_stats.team1_score}} {{ score_symbol(map_stats.team1_score, map_stats.team2_score) }} {{map_stats.team2_score}} {{team2.name}}
+      </h2>
     </div>
     
     <div class="panel-body">
-      <p>Started at {{ map_stats.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
-      
-      {% if map_stats.end_time is not none %}
-      <p>Ended at {{ map_stats.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
-      {% endif %}
-      
       <table class="table table-hover table-condensed">
         <thead>
           <tr>
@@ -157,14 +149,25 @@
         
       </table>
     </div>
-    
+    <div class="panel-footer text-muted">
+      <p>Started at {{ map_stats.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
+      {% if map_stats.end_time is not none %}
+      <p>Ended at {{ map_stats.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
+      {% endif %}
+    </div>
   </div>
   {% endfor %}
   
+  {% if match.start_time is not none %}
+  <div class="well text-muted">
+    <p>Started at {{ match.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
+    {% if match.end_time is not none %}   
+    <p>Ended at {{ match.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
+    {% endif %}
+    {% else %}
+  </div>
+  {% endif %}
 </div>
-
-
-<br>
 </div>
 
 <script>
