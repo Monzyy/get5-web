@@ -1,4 +1,6 @@
 import datetime
+from hashlib import md5
+import time
 from flask import Blueprint, request, render_template, flash, g, redirect, jsonify, Markup, url_for
 
 from . import steamid
@@ -35,7 +37,7 @@ class TournamentForm(Form):
                                   validators=[validators.Length(min=-1, max=Tournament.name.type.length)])
 
     tournament_url = StringField('Tournament url',
-                                 default=config_setting('BRAND').replace('.', '') + '_tournament',
+                                 default=md5(str(time.time()).encode('ascii')).hexdigest(),
                                  validators=[validators.Length(min=-1,
                                                                max=Tournament.url.type.length)])
 
