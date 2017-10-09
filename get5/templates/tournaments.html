@@ -1,61 +1,32 @@
-{% from "macros.html" import pagination_buttons, pagination_active %}
+{% from "macros.html" import create_button, pagination_buttons, pagination_active %}
 
 {% extends "layout.html" %}
+{% set active_page = "tournaments" %}
 {% block content %}
 
-<div id="content">
-
-  <h1>
-  {% if my_tournaments %}
-  Your tournaments
-  {% elif all_tournaments %}
-  All tournaments
-  {% else %}
-  tournaments for <a href="/user/{{ tournament_owner.id }}"> {{ tournament_owner.name }}</a>
-  {% endif%}
-  </h1>
-
-  <table class="table table-striped">
-    <thead>
-      <tr>
-     {# <th>ID</th> #}
-        <th>Name</th>
-        <th></th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-
-    {% for tournament in tournaments.items %}
-      <tr>
-     {# <td><a href="/tournament/{{tournament.id}}">{{tournament.id}}</a></td> #}
-        <td><a href="/tournament/{{tournament.id}}">{{ tournament.name }}</a></td>
-        <td><a href="{{ tournament.url }}">challonge link</a></td>
-        <td><a href="{{ tournament.challonge_data.sign_up_url }}">sign up link</a></td>
-      </tr>
-    {% endfor %}
-
-    </tbody>
-  </table>
-
-  {{ pagination_buttons(tournaments) }}
-
+<div class="row">
+  <div class="col">
+    <h1 class="display-3">Tournaments</h1>
+  </div>
+  {{ create_button('tournament') }}
+</div>
+<div class="row">
+  <div class="col">
+    <div class="list-group">
+      {% for tournament in tournaments.items %}
+      <a href="/tournament/{{tournament.id}}" class="list-group-item list-group-item-action">
+        <span class="h3">{{ tournament.name }} <span class="badge badge-secondary">{{  tournament.challonge_data.state|title }}</span></span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col"> 
+    {{ pagination_buttons(tournaments) }}
+  </div>
 </div>
 
 {{ pagination_active(tournaments) }}
-
-{% if my_tournaments %}
-<script>
-    $(document).ready(function () {
-    $("#mytournaments").parent().addClass("active"); })
-</script>
-{% endif %}
-
-{% if all_tournaments %}
-<script>
-    $(document).ready(function () {
-    $("#tournaments").parent().addClass("active"); })
-</script>
-{% endif %}
 
 {% endblock %}

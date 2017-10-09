@@ -29,101 +29,99 @@
 {% endmacro %}
 
 {% block content %}
-
-<div id="content">
-  
-  <div class="container">
-    <div class="row">
-      <div class="col-md-8">
-        <h1>
-          {# {{ team1.get_logo_or_flag_html(1.0, team2) }} #}<a href="/team/{{team1.id}}"> {{team1.name}}</a>
-          &nbsp;{{ match.team1_score }}
-          {{ score_symbol(match.team1_score, match.team2_score) }}
-          {{ match.team2_score }}&nbsp;
-          {# {{ team2.get_logo_or_flag_html(1.0, team1) }} #}<a href="/team/{{team2.id}}"> {{team2.name}}</a>
-          <br><small>{{ match.get_format() }}</small>
-        </h1>
+<div class="row pt-5">
+  <div class="col">
+    <h3 class="display-3 text-right">
+      <a href="/team/{{team1.id}}">{{team1.name}}</a>&nbsp;{{ match.team1_score }}
+    </h3>
+  </div>
+  <div class="col col-auto">
+    <h3 class="display-3 text-center">
+      {{ score_symbol(match.team1_score, match.team2_score) }}
+    </h3>
+  </div>
+  <div class="col">
+    <h3 class="display-3 text-left">
+      {{ match.team2_score }}&nbsp;<a href="/team/{{team2.id}}">{{team2.name}}</a>
+    </h3>
+  </div>
+  {% if admin_access and (match.live() or match.pending()) %}
+  <div class="col col-auto ml-auto">
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Admin tools
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        {% if match.live() %}
+        <a class="dropdown-item" id="pause" href="{{request.path}}/pause">Pause match</a>
+        <a class="dropdown-item" id="unpause" href="{{request.path}}/unpause">Unpause match</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" id="addplayer_team1" href="#">Add player to team1</a>
+        <a class="dropdown-item" id="addplayer_team2" href="#">Add player to team2</a>
+        <a class="dropdown-item" id="addplayer_spec" href="#">Add player to specator list</a>
+        <a class="dropdown-item" id="rcon_command" href="#">Send rcon command</a>
+        {% else %}
+        <a class="dropdown-item" id="edit" href="{{request.path}}/edit">Edit match</a>
+        {% endif %}
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" id="backup_manager" href="{{request.path}}/backup">Load a backup file</a>
+        <a class="dropdown-item" href="{{request.path}}/cancel">Cancel match</a>
+        <a class="dropdown-item" href="{{request.path}}/start">Start match</a>
       </div>
-      {% if admin_access and (match.live() or match.pending()) %}
-      <div class="col-md-4">
-        
-        <div class="dropdown dropdown-header pull-right">
-          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            Admin tools
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            {% if match.live() %}
-            <li><a id="pause" href="{{request.path}}/pause">Pause match</a></li>
-            <li><a id="unpause" href="{{request.path}}/unpause">Unpause match</a></li>
-            {% else %}
-            <li><a id="edit" href="{{request.path}}/edit">Edit match</a></li>
-            {% endif %}
-            <li role="separator" class="divider"></li>
-            <li><a id="addplayer_team1" href="#">Add player to team1</a></li>
-            <li><a id="addplayer_team2" href="#">Add player to team2</a></li>
-            <li><a id="addplayer_spec" href="#">Add player to specator list</a></li>
-            <li><a id="rcon_command" href="#">Send rcon command</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a id="backup_manager" href="{{request.path}}/backup">Load a backup file</a></li>
-            <li><a href="{{request.path}}/cancel">Cancel match</a></li>
-            <li><a href="{{request.path}}/start">Start match</a></li>
-          </ul>
-        </div>
-      </div>
-      {% endif %}     
-    </div>
-  
-  <br>
+    </div> 
+  </div>
+  {% endif %}
+</div>
+<div class="row">
+  <div class="col text-center">
+    <h5>
+      <span class="badge badge-info">{{ match.get_format() }}</span>
+      {% if match.start_time is none %}
+      <span class="badge badge-primary">
+        Pending
+      </span>
+      {% elif match.live() %}
+      <span class="badge badge-success">
+        Live!
+      </span>
+      {% else %}
+      <span class="badge badge-secondary">
+        Ended
+      </span>
+      {% endif %}
+    </span>
+  </h5>
+</div>
+</div>  
+<div class="row">
   {% if match.cancelled %}
   <div class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
     This match has been cancelled.
-  </div>
-  {% endif %}
-  
-  {% if match.forfeit %}
+  </div>   
+  {% elif match.forfeit %}
   <div class="alert alert-warning" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
     This match was forfeit by {{match.get_loser()}}.
-  </div>
-  {% endif %}
-  
-  
-  {% if match.start_time is none %}
-  <div class="panel panel-default" role="alert">
-    <div class="panel-body">
-      This match is pending start.
-    </div>
-  </div>
+  </div>  
   {% elif match.live() %}
-  <div class="panel panel-success" role="alert">
-    <div class="panel-body">
-      This match is live!
-    </div>
-  </div>
-  {% else %}
-  <div class="panel panel-info" role="alert">
-    <div class="panel-body">
-      This match has ended.
-    </div>
+  <div class="col-4 ml-auto mr-auto">
+    <a href="steam://connect/{{match.get_server().get_hostport()}}" class="btn btn-success btn-lg btn-block">Connect to server</a>
   </div>
   {% endif %}
-  
-  
-  {% for map_stats in map_stat_list %}
-  <br>
-  <div class="panel panel-primary">
-    <div class="panel-heading">
-      <h2 class="panel-title">
-      Map {{ map_stats.map_number + 1 }}: {{ map_stats.map_name }}&nbsp;&nbsp;|&nbsp;&nbsp;
-      {{team1.name}} {{map_stats.team1_score}} {{ score_symbol(map_stats.team1_score, map_stats.team2_score) }} {{map_stats.team2_score}} {{team2.name}}
+</div>
+{% for map_stats in map_stat_list %}
+<div class="row">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        Map {{ map_stats.map_number + 1 }}: {{ map_stats.map_name }}&nbsp;&nbsp;|&nbsp;&nbsp;
+        {{team1.name}} {{map_stats.team1_score}} {{ score_symbol(map_stats.team1_score, map_stats.team2_score) }} {{map_stats.team2_score}} {{team2.name}}
       </h2>
-    </div>
-    
-    <div class="panel-body">
+    </div>        
+    <div class="card-body">
       <table class="table table-hover table-condensed">
         <thead>
           <tr>
@@ -145,33 +143,30 @@
           {{ player_stat_table(team1, map_stats) }}
           
           {{ player_stat_table(team2, map_stats) }}
-        </tbody>
-        
+        </tbody>     
       </table>
     </div>
-    <div class="panel-footer text-muted">
+    <div class="card-footer text-muted">
       <p>Started at {{ map_stats.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
       {% if map_stats.end_time is not none %}
       <p>Ended at {{ map_stats.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
       {% endif %}
     </div>
   </div>
-  {% endfor %}
-  
-  {% if match.start_time is not none %}
+</div>
+{% endfor %}
+{% if match.start_time is not none %}
+<div class="row">
   <div class="well text-muted">
     <p>Started at {{ match.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
     {% if match.end_time is not none %}   
     <p>Ended at {{ match.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
     {% endif %}
-    {% else %}
   </div>
-  {% endif %}
-</div>
-</div>
+</div>    
+{% endif %}
 
 <script>
-  
   jQuery("#addplayer_team1").click(function(e) {
     var input = prompt("Please enter a steamid to add to {{team1.name}}", "");
     if (input != null) {

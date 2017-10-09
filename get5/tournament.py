@@ -23,7 +23,7 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = widgets.CheckboxInput()
 
 def server_query_factory():
-    GameServer.query.filter((GameServer.public_server == True) | (GameServer.user_id == g.user.id))
+    return GameServer.query.filter((GameServer.public_server == True) | (GameServer.user_id == g.user.id))
 
 class AddServers(Form):
     serverpool = QuerySelectMultipleField('Server pool', query_factory=server_query_factory,
@@ -111,8 +111,11 @@ def tournament_create():
 @tournament_blueprint.route('/tournament/<int:tournamentid>')
 def tournament(tournamentid):
     tournament = Tournament.query.get_or_404(tournamentid)
-    participant_list = tournament.participants.all()
-    match_list = tournament.matches.all()
+    participants = tournament.participants.all()
+    matches = tournament.matches.all()
+    pending_matches = [match for match in matches if match.pending()]
+    live_matches = [match for match in matches if match.live()]
+    finished_matches = [match for match in matches if match.finished()]
     serverpool = tournament.serverpool.all()
 
     is_owner = False
@@ -124,8 +127,9 @@ def tournament(tournamentid):
             'ADMINS_ACCESS_ALL_TOURNAMENTS') and g.user.admin)
 
     return render_template('tournament.html', user=g.user, admin_access=has_admin_access,
-                           tournament=tournament, participant_list=participant_list,
-                           match_list=match_list, serverpool=serverpool)
+                           tournament=tournament, participants=participants,
+                           live_matches=live_matches, finished_matches=finished_matches,
+                           pending_matches=pending_matches, serverpool=serverpool)
 
 
 @tournament_blueprint.route('/tournament/<int:tournamentid>/sync')

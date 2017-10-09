@@ -1,31 +1,33 @@
 {% macro show_flashed_messages() -%}
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="alert alert-danger" role="alert">
-      <ul>
-        {% for message in messages %}
-        <li><b>{{ message[1] }}</b></li>
-        {% endfor %}
-      </ul>
-    </div>
-    <br>
-    {% endif %}
-  {% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="alert alert-danger" role="alert">
+  <ul>
+    {% for message in messages %}
+    <li><b>{{ message[1] }}</b></li>
+    {% endfor %}
+  </ul>
+</div>
+<br>
+{% endif %}
+{% endwith %}
 
 {%- endmacro %}
 
-
+{% macro create_button(type) %}
+<div class="col col-auto ml-auto"><a href="/{{type}}/create" class="btn">Create {{ type|title }}</a></div>
+{%- endmacro %}
 
 {% macro pagination_buttons(pageobj) -%}
 
-  {% if pageobj.pages > 1 %}
-  <ul class="pagination">
-    {% for i in range(1, pageobj.pages + 1) %}
-    <li id="page{{i}}"><a href="{{request.path}}?page={{i}}">{{i}}</a></li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+{% if pageobj.pages > 1 %}
+<ul class="pagination">
+  {% for i in range(1, pageobj.pages + 1) %}
+  <li id="page{{i}}"><a href="{{request.path}}?page={{i}}">{{i}}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
 
 {%- endmacro %}
 
@@ -33,12 +35,12 @@
 
 {% macro pagination_active(pageobj) -%}
 
-  {% if pageobj.pages > 1 %}
-  <script>
-      $(document).ready(function () {
-      $("#page{{page}}").addClass("active"); })
-  </script>
-  {% endif %}
+{% if pageobj.pages > 1 %}
+<script>
+$(document).ready(function () {
+  $("#page{{page}}").addClass("active"); })
+</script>
+{% endif %}
 
 {%- endmacro %}
 
@@ -54,21 +56,16 @@
 {% endif %}
 {% endmacro %}
 
-{% macro panel_table(heading, items, view_url, view_attr, show_attr) %}
-<div class="panel panel-default">
-  <div class="panel-heading">{{ heading }}</div>
-      <table class="table">
-          {% for i in items %}
-          <tr>
-              <td>
-              <a href="{{ view_url }}/{{ i|attr(view_attr) }}">{{ i|attr(show_attr) }}</a>
-              </td>
-          </tr>
-          {% else %}
-          <tr>
-              <td>None yet ...</td>
-          </tr>
-          {% endfor %}
-      </table>
+{% macro card_list(heading, items, view_url, view_attr, show_attr) %}
+<div class="card">
+  <h4 class="card-header">{{ heading }}</h4>
+    <div class="list-group list-group-flush">
+      {% for i in items %}
+      <a href="{{ view_url }}/{{ i|attr(view_attr) }}" class="list-group-item">
+        {{ i|attr(show_attr) }}
+      </a>
+      {% endfor %}
+    </div>
 </div>
 {% endmacro %}
+  

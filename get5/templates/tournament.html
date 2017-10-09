@@ -1,91 +1,133 @@
-{% from "macros.html" import panel_table %}
+{% from "macros.html" import card_list %}
 
 {% extends "layout.html" %}
 
-{% block content %}
+{% macro match_list(category, matches) %}
+{% if matches %}
+<div class="card-body pb-1 align-bottom">
+    <span class="card-text h6">{{ category | title }}</span>
+</div>
+<div class="list-group list-group-flush">
+    {% for match in matches %}
+    <div onclick="location.href='/match/{{match.id}}'" class="list-group-item list-group-item-action" style="cursor: pointer;">
+        <div class="row">
+            <div class="col col-auto">{{ match.title }}</div>
+            <div class="col text-center">{{ match.get_vs_string() }}</div>
+        </div>       
+    </div>        
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
 
-<div id="content">
-    <div class="container">
-        <div class="jumbotron">
-            <a href="{{ tournament.challonge_url }}"></a>
-            <h1>
+{% block content %}
+<div class="jumbotron">
+    <div class="row justify-content-between">
+        <div class="col">
+            <h1 class="display-3">
                 {{ tournament.name }}
-                {% if admin_access %}
-                <div class="pull-right">
-                    <a id="sync" href="{{request.path}}/sync" class="btn btn-primary">Sync with Challonge</a>
-                    {% if tournament.start_time is none %}
-                    <a id="start" href="{{request.path}}/start" class="btn btn-success">Start</a>
-                    {% elif tournament.end_time is none %}
-                    <a id="start" href="{{request.path}}/reset" class="btn btn-danger">Reset!</a>
-                    {% endif %}
-                </div>
-                {% endif %}
             </h1>
+        </div>
+        {% if admin_access %}
+        <div class="col col-auto ml-auto">        
+            <a id="sync" href="{{request.path}}/sync" class="btn btn-primary">Sync with Challonge</a>
+            {% if tournament.start_time is none %}
+            <a id="start" href="{{request.path}}/start" class="btn btn-success">Start</a>
+            {% elif tournament.end_time is none %}
+            <a id="start" href="{{request.path}}/reset" class="btn btn-danger">Reset!</a>
+            {% endif %}      
+        </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <div class="col">
             <div class="progress">
-                <div class="progress-bar" role="progressbar"
-                aria-valuenow="{{ tournament.challonge_data.progress_meter }}" aria-valuemin="0"
-                aria-valuemax="100" style="width: {{ tournament.challonge_data.progress_meter }}%;">
+                <div class="progress-bar" role="progressbar" aria-valuenow="{{ tournament.challonge_data.progress_meter }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ tournament.challonge_data.progress_meter }}%;" >
                     <span class="sr-only">
                         {{ tournament.challonge_data.progress_meter }}
                     </span>
                 </div>
-            </div>
+            </div> 
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <p class="lead text-muted">
                 {{ tournament.challonge_data.state|title }} -
                 {{ tournament.challonge_data.tournament_type|title }} -
-                <a href="{{ tournament.url }}">Challonge</a>
+                <a href="{{ tournament.url }}">Challonge Page</a>
             </p>
-            <p class="text-muted" style="font-size: 10pt;">
+            <p class="lead text-muted" style="font-size: 10pt;">
                 {% set maps = tournament.veto_mappool.split() %}
                 Map pool: {{ ', '.join(maps) }}
             </p>
-            {% if tournament.challonge_data.state == 'pending' %}
+        </div>
+    </div>
+    {% if tournament.challonge_data.state == 'pending' %}
+    <div class="row">
+        <div class="col">
             <p>
                 <a id="sign_up" href="{{ tournament.challonge_data.sign_up_url }}" class="btn btn-primary btn-lg">Sign Up</a>
             </p>
+        </div>
+    </div>
+    {% endif %}   
+</div>
+
+<div class="row">
+    <div class="col-4">
+        <div class="card">
+            <h4 class="card-header">Participants</h4>
+            {% if tournament.challonge_data.state == 'pending' %}
+            <div class="card-body">
+                <a href="{{ tournament.challonge_data.sign_up_url }}" class="card-link">Sign Up</a>
+            </div>
             {% endif %}
+            <div class="list-group list-group-flush">
+                {% for participant in participants %}
+                <a href="/team/{{ participant.id }}" class="list-group-item">
+                    {{ participant.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-8">
+        <div class="row pb-4">
+            <div class="col">
+                <div class="card">
+                    <h4 class="card-header">Matches</h4>
+                    {{ match_list('Pending', pending_matches) }}
+                    {{ match_list('Live', live_matches) }}
+                    {{ match_list('Finished', finished_matches) }}
+                </div>
+            </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
-                {{ panel_table('Participants', participant_list, '/team', 'id', 'name') }}
-            </div>
-            <div class="col-md-6">
-                <div class="panel panel-default">
-                  <div class="panel-heading">Matches</div>
-                    <table class="table">
-                      {% for match in match_list %}
-                      <tr>
-                          <td><a href="/match/{{match.id}}">{{ match.title }} - {{ match.get_status_string() }}</a></td>
-                          <td class="text-center">{{ match.get_vs_string() }}</td>
-                      </tr>
-                      {% else %}
-                      <tr><td>None yet ...</td></tr>
-                      {% endfor %}
-                  </table>
-                </div>
+            <div class="col">
                 {% if admin_access %}
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-		        Server pool 
-			    <div class="pull-right">
-				<a href="/tournament/{{tournament.id}}/add_servers" class="btn">Add servers</a>
-			    </div>
-		    </div>
-                    <table class="table">
-                      {% for server in serverpool %}
-                      <tr>
-                          <td><a href="/server/{{server.id}}">{{ server.get_display() }}</a></td>
-                          <td>{{ 'In use' if server.in_use else 'Free' }}</td>
-                      </tr>
-                      {% else %}
-                      <tr><td>None yet ...</td></tr>
-                      {% endfor %}
-                  </table>
+                <div class="card">
+                    <h4 class="card-header">
+                        Server Pool     
+                    </h4>
+                    <div class="list-group list-group-flush">
+                        {% for server in serverpool %}
+                        <a href="/server/{{server.id}}" class="list-group-item">
+                            {{ server.get_display() }}
+                            {{ 'In use' if server.in_use else 'Free' }}
+                        </a>
+                        {% else %}
+                        <div class="list-group-item">...</div>
+                        {% endfor %}
+                    </div>
+                    <div class="card-body">
+                        <a href="{{request.path}}/add_servers" class="card-link">Add/Remove Servers</a>
+                    </div>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
+</div>   
 
 {% endblock %}
