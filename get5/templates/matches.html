@@ -67,19 +67,5 @@
 
 {{ pagination_active(matches) }}
 
-{% if my_matches %}
-<script>
-  $(document).ready(function () {
-    $("#mymatches").parent().addClass("active"); })
-  </script>
-  {% endif %}
-  
-  {% if all_matches %}
-  <script>
-    $(document).ready(function () {
-      $("#matches").parent().addClass("active"); })
-    </script>
-    {% endif %}
-    
-    {% endblock %}
+{% endblock %}
     

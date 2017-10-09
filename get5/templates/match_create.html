@@ -1,70 +1,65 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div id="content">
-
-  <form role="form" action="" method="post" class="form-horizontal">
+  <form role="form" action="" method="post">
 
       {{ form.csrf_token }}
 
-      <div class="form-group">
-        {{ form.server.label(class="col-sm-2 control-label") }}
-          <div class="col-sm-4">
-            {{ form.server(class="form-control input-sm") }}
+      <div class="form-group row">
+        {{ form.server.label(class="col-sm-2 col-form-label") }}
+          <div class="col-8">
+            {{ form.server(class="form-control") }}
           </div>
-          <a href="/server/create" class="btn btn-primary">Create a server</a>
+          <div class="col-auto">
+            <a href="/server/create" class="btn btn-primary">Create a server</a>
+          </div>    
       </div>
 
-      <br>
-
-      <div class="form-group">
-        {{ form.team1.label(class="col-sm-2 control-label") }}
-          <div class="col-sm-4">
-            {{ form.team1(class="form-control input-sm") }}
+      <div class="form-group row">
+        {{ form.team1.label(class="col-sm-2 col-form-label") }}
+          <div class="col-8">
+            {{ form.team1(class="form-control") }}
           </div>
-          <a href="/team/create" class="btn btn-primary">Create a team</a>
+          <div class="col-auto">
+            <a href="/team/create" class="btn btn-primary">Create a team</a>
+          </div>
       </div>
 
       {% if match_text_option and not edit %}
-      <div class="form-group">
-      {{ form.team1_string.label(class="col-sm-2 control-label") }}
-        <div class="col-sm-4">
-          {{ form.team1_string(class="form-control input-sm") }}
+      <div class="form-group row">
+      {{ form.team1_string.label(class="col-sm-2 col-form-label") }}
+        <div class="col-sm-10">
+          {{ form.team1_string(class="form-control") }}
           <p class="help-block">The team title texts and match text are shown in freezetime to spectators: <a href="/static/img/matchtext_example.png" target="_blank">example</a> </p>
         </div>
       </div>
-      <br>
       {% endif %}
 
-      <div class="form-group">
-        {{ form.team2.label(class="col-sm-2 control-label") }}
-          <div class="col-sm-4">
-            {{ form.team2(class="form-control input-sm") }}
+      <div class="form-group row">
+        {{ form.team2.label(class="col-sm-2 col-form-label") }}
+          <div class="col-8">
+            {{ form.team2(class="form-control") }}
           </div>
       </div>
 
       {% if match_text_option and not edit  %}
-      <div class="form-group">
-      {{ form.team2_string.label(class="col-sm-2 control-label") }}
-        <div class="col-sm-4">
-          {{ form.team2_string(class="form-control input-sm") }}
+      <div class="form-group row">
+      {{ form.team2_string.label(class="col-sm-2 col-form-label") }}
+        <div class="col-sm-10">
+          {{ form.team2_string(class="form-control") }}
         </div>
       </div>
 
-      <br>
-
-      <div class="form-group">
-      {{ form.match_title.label(class="col-sm-2 control-label") }}
-        <div class="col-sm-4">
-          {{ form.match_title(class="form-control input-sm") }}
+      <div class="form-group row">
+      {{ form.match_title.label(class="col-sm-2 col-form-label") }}
+        <div class="col-sm-10">
+          {{ form.match_title(class="form-control") }}
         </div>
       </div>
       {% endif %}
 
-      <br>
-
-      <div class="form group">
-      {{ form.series_type.label(class="col-sm-2 control-label") }}
+      <div class="form-group row">
+      {{ form.series_type.label(class="col-sm-2 col-form-label") }}
         <div class="col-sm-offset-2">
           {% for subfield in form.series_type %}
           <tr>
@@ -76,10 +71,9 @@
         </div>
       </div>
 
-      <br>
       {% if not edit %}
-      <div class="form-group">
-        {{ form.veto_mappool.label(class="col-sm-2 control-label", style="height:50px") }}
+      <div class="form-group row">
+        {{ form.veto_mappool.label(class="col-sm-2 col-form-label", style="height:50px") }}
         <div class="col-sm-offset-2">
           {% for subfield in form.veto_mappool %}
           <tr>
@@ -101,22 +95,8 @@
       <input type="submit" class="btn btn-primary" value="Create Match">
     </div>
     {% endif %}
-
-      <br>
-
   </form>
 
 </div>
-
-<script>
-$("#server").chosen()
-$("#team1").chosen()
-$("#team2").chosen()
-</script>
-
-<script>
-  $(document).ready(function () {
-  $("#match_create").parent().addClass("active"); })
-</script>
 
 {% endblock %}

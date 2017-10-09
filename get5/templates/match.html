@@ -29,24 +29,9 @@
 {% endmacro %}
 
 {% block content %}
-<div class="row pt-5">
-  <div class="col">
-    <h3 class="display-3 text-right">
-      <a href="/team/{{team1.id}}">{{team1.name}}</a>&nbsp;{{ match.team1_score }}
-    </h3>
-  </div>
-  <div class="col col-auto">
-    <h3 class="display-3 text-center">
-      {{ score_symbol(match.team1_score, match.team2_score) }}
-    </h3>
-  </div>
-  <div class="col">
-    <h3 class="display-3 text-left">
-      {{ match.team2_score }}&nbsp;<a href="/team/{{team2.id}}">{{team2.name}}</a>
-    </h3>
-  </div>
-  {% if admin_access and (match.live() or match.pending()) %}
-  <div class="col col-auto ml-auto">
+{% if admin_access and (match.live() or match.pending()) %}
+<div class="row">
+  <div class="col-auto ml-auto">
     <div class="dropdown">
       <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Admin tools
@@ -70,7 +55,26 @@
       </div>
     </div> 
   </div>
-  {% endif %}
+</div>
+<div class="row justify-content-center">
+{% else %}
+<div class="row pt-5 justify-content-center">
+{% endif %}
+  <div class="col">
+    <h3 class="display-4 text-right">
+      <a href="/team/{{team1.id}}">{{team1.name}}</a>&nbsp;{{ match.team1_score }}
+    </h3>
+  </div>
+  <div class="col-auto">
+    <h3 class="display-4 text-center">
+      {{ score_symbol(match.team1_score, match.team2_score) }}
+    </h3>
+  </div>
+  <div class="col">
+    <h3 class="display-4 text-left">
+      {{ match.team2_score }}&nbsp;<a href="/team/{{team2.id}}">{{team2.name}}</a>
+    </h3>
+  </div>
 </div>
 <div class="row">
   <div class="col text-center">

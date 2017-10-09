@@ -1,63 +1,42 @@
-{% from "macros.html" import pagination_buttons, pagination_active %}
+{% from "macros.html" import create_button, pagination_buttons, pagination_active %}
 
 {% extends "layout.html" %}
 {% set active_page = "teams" %}
 {% block content %}
 
-<div id="content">
-
-  <h1>
-  {% if my_teams %}
-  Your teams
-  {% else %}
-  Teams for <a href="/user/{{ owner.id }}"> {{ owner.name }}</a>
-  {% endif%}
-  </h1>
-
-  <ul class="list-group">
-
-    {% if (teams.items | length) == 0 %}
-    <li class="list-group-item">
-    No teams found.
-    </li>
-    {% endif %}
-
+<div class="row">
+  <div class="col">
+    <h1 class="display-3">
+      Teams
+    </h1>
+  </div>
+  {{ create_button('team') }}
+</div>
+<div class="row">
+  <div class="col">
+    <div class="list-group">
     {% for team in teams.items %}
-    <li class="list-group-item">
-
-      {{ team.get_flag_html(0.75) }}
-
-      <a href="{{ team.get_url() }}" class="col-sm-offset-1"> {{team.name}}</a>
-
-      {{ team.get_logo_html(0.75) }}
-
-      {% if team.can_delete(user) %}
-      <div class="pull-right">
-        <a href="/team/{{team.id}}/delete" class="btn btn-danger btn-xs">Delete</a>
-      </div>
+    <div class="list-group-item list-group-item-action d-flex flex-row justify-content-between">
+      <a href="{{ team.get_url() }}">
+        <h4>{{ team.get_flag_html(0.75) }}
+        {{team.name}}
+        {{ team.get_logo_html(0.75) }}</h4>
+      </a>
+      <div class="d-flex flex-row">
+      {% if team.can_delete(user) %}     
+          <a href="/team/{{team.id}}/delete" class="btn btn-danger btn-xs">Delete</a>
       {% endif %}
-
       {% if team.can_edit(user) %}
-      <div class="pull-right">
-        <a href="/team/{{team.id}}/edit" class="btn btn-primary btn-xs">Edit</a>
-      </div>
+          <a href="/team/{{team.id}}/edit" class="btn btn-primary btn-xs">Edit</a>
       {% endif %}
-
-    </li>
+      </div>   
+    </div>
     {% endfor %}
-  </ul>
-
+    </div>
+  </div>
   {{ pagination_buttons(teams) }}
-
 </div>
 
 {{ pagination_active(teams) }}
-
-{% if my_teams %}
-<script>
-    $(document).ready(function () {
-    $("#myteams").parent().addClass("active"); })
-</script>
-{% endif %}
 
 {% endblock %}

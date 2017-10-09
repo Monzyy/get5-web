@@ -112,7 +112,7 @@
                     </h4>
                     <div class="list-group list-group-flush">
                         {% for server in serverpool %}
-                        <a href="/server/{{server.id}}" class="list-group-item">
+                        <a href="/server/{{server.id}}/edit" class="list-group-item">
                             {{ server.get_display() }}
                             {{ 'In use' if server.in_use else 'Free' }}
                         </a>

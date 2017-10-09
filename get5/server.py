@@ -130,12 +130,13 @@ def server_delete(serverid):
     return redirect('myservers')
 
 
-@server_blueprint.route("/myservers")
-def myservers():
+@server_blueprint.route("/servers")
+def servers():
+    page = util.as_int(request.values.get('page'), on_fail=1)
     if not g.user:
-        return redirect('/login')
+        servers = GameServer.query.order_by(-GameServer.id).filter_by(public_server=True).paginate(page, 20)
+    else:
+        servers = GameServer.query.order_by(-GameServer.id).filter(
+            (GameServer.user_id == g.user.id) | (GameServer.public_server == True)).paginate(page, 20)
 
-    servers = GameServer.query.filter_by(
-        user_id=g.user.id).order_by(-GameServer.id).limit(50)
-
-    return render_template('servers.html', user=g.user, servers=servers)
+    return render_template('servers.html', user=g.user, servers=servers, page=page)

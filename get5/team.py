@@ -178,7 +178,7 @@ def team_delete(teamid):
     if Team.query.filter_by(id=teamid).delete():
         db.session.commit()
 
-    return redirect('/myteams')
+    return redirect(url_for('team.teams', userid=g.user.id))
 
 
 @team_blueprint.route('/teams/<int:userid>', methods=['GET'])
@@ -207,9 +207,8 @@ def teams_user(userid):
                                page=page, owner=user)
 
 
-@team_blueprint.route('/myteams', methods=['GET'])
-def myteams():
-    if not g.user:
-        return redirect('/login')
-
-    return redirect('/teams/' + str(g.user.id))
+@team_blueprint.route('/teams', methods=['GET'])
+def teams():
+    page = util.as_int(request.values.get('page'), on_fail=1)
+    teams = Team.query.order_by(-Team.id).paginate(page, 20)
+    return render_template('teams.html', user=g.user, teams=teams, page=page)
