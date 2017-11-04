@@ -60,7 +60,7 @@ def server_create():
                 db.session.commit()
                 app.logger.info(
                     'User {} created server {}'.format(g.user.id, server.id))
-                return redirect('/myservers')
+                return redirect('/servers')
             else:
                 db.session.remove()
                 flash('Failed to connect to server')

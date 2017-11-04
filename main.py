@@ -11,7 +11,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Testing web server for get5.')
     parser.add_argument('--host', default='127.0.0.1',
                         help='ip for the server to listen on')
-    parser.add_argument('--port', '-p', type=int, default=5000,
+    parser.add_argument('--port', '-p', type=int, default=8000,
                         help='port for the server to listen on')
     args = parser.parse_args()
 

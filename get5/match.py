@@ -217,7 +217,7 @@ def match_edit(matchid):
 
     form = MatchForm(
         request.form,
-        server=GameServer.query.get(match.server_id),
+        server=GameServer.query.get(match.server_id) if match.server_id else None,
         series_type="bo{}".format(match.max_maps),
         team1=Team.query.get(match.team1_id),
         team2=Team.query.get(match.team2_id),)
