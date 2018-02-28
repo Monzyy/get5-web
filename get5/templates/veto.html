@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+  .team0-title:after {
+    content: 'decider';
+  }
+  .team1-title:after {
+    content: '{{ team1.name }}';
+  }
+  .team2-title:after {
+    content: '{{ team2.name }}';
+  }
+</style>
+
+<div class="row pb-4">
+  <div class="col">
+    <div id="maps" class="card-group">
+      {% for map in mappool %}
+      <div id="{{ map }}" class="card map-card text-center">
+        <img class="card-img-top" src="/static/img/maps/{{ map }}_small.jpg" alt="{{ map }}">
+        <div class="card-body">
+          <h5 class="card-title">{{ map }}</h5>
+          <p><span class="badge badge-dark"></span> <span id="team"></span></p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+      <div id="action-alert" class="alert alert-primary d-none">
+          <h4 class="alert-heading"></h4>
+      </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <ul id="progress_log" class="list-group">  </ul>
+  </div> 
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+  var interval = 5000;  // 1000 = 1 second, 3000 = 3 seconds
+  var progress_count = -1;
+  function refresh(queue_next) {
+    $.ajax({
+      type: 'GET',
+      url: '{{request.path}}/refresh',
+      data: {"progress_count": progress_count},
+      success: function (data) {
+        if(data.done){
+          interval = 0;
+          $('div.map-card').unbind();
+          $('div#action-alert').addClass('d-none');
+        }
+        if(data.hasOwnProperty('progress')){
+          $('#progress_log').empty()
+          progress_count = data.progress_count;
+          data.progress.forEach(function(step, i) {
+            var $log_entry = $('<li></li>')
+            .append($('<span></span>').addClass('team' + step.team + '-title'))
+            .append($('<span></span>').text(' - ' + step.mapname))
+            .addClass('list-group-item');
+            var $map_card = $('div#' + step.mapname);
+            $map_card.find('span#team').addClass('team' +  step.team + '-title')
+            $map_card.find('span.badge').text(i + 1)
+            $map_card.addClass('text-white');
+            $map_card.unbind()
+            if (step.action == 'b') {
+              $map_card.addClass('bg-danger');
+              $log_entry.addClass('list-group-item-danger');
+            } else if (step.action == 'p'){
+              $map_card.addClass('bg-success');
+              $log_entry.addClass('list-group-item-success');
+            }
+            
+            $('#progress_log').append($log_entry);
+          });
+        }
+        if (data.hasOwnProperty('next_action')) {
+          $('div#action-alert').removeClass('d-none').children('.alert-heading').empty()
+            .append($('<span></span>').addClass('team' + data.next_action.team + '-title'))
+            .append($('<span></span>').text(" must " + (data.next_action.action == 'b' ? "ban" : "pick") + " a map"));
+        }
+      },
+      complete: function (data) {
+        // Schedule the next
+        if(interval > 0 && queue_next){
+          setTimeout(refresh, interval, true);
+        }
+      }
+    });
+  }
+  
+  
+  $(function() {
+    $('div.map-card').bind('click', function() {
+      $.ajax({
+        type: 'POST',
+        url: '{{request.path}}/action',
+        data: {mapname: this.id},
+        success: function(data) {
+          if($.isEmptyObject(data)){
+            alert('Veto over! You cant take any more actions');
+          }
+          if(data.hasOwnProperty('error')){
+            alert(data.error)
+          }
+          refresh(false)
+        }
+      });
+    });
+  });
+  
+  refresh(true)
+  
+</script>
+
+
+{% endblock %}

@@ -18,6 +18,7 @@ defaults = {
     'ADMINS_ACCESS_ALL_TOURNAMENTS': True,
     'CREATE_MATCH_TITLE_TEXT': False,
     'CREATE_TOURNAMENT_NAME_TEXT': False,
+    'ALLOW_OFFLINE_SERVERS': False,
     'WHITELISTED_IDS': [],
     'ADMIN_IDS': [],
     'MAPLIST': [

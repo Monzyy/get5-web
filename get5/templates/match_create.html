@@ -59,6 +59,22 @@
       {% endif %}
 
       <div class="form-group row">
+          {{ form.veto_process.label(class="col-sm-2 col-form-label") }}
+            <div class="col-8">
+              {{ form.veto_process(class="form-control", placeholder="1:b 2:b 1:b 2:b 1:b 2:b") }}
+            </div>
+      </div>
+      
+      {% if edit  %}
+      <div class="form-group row">
+        {{ form.veto_progress.label(class="col-sm-2 col-form-label") }}
+          <div class="col-8">
+            {{ form.veto_progress(class="form-control") }}
+          </div>
+      </div>
+      {% endif %}
+
+      <div class="form-group row">
       {{ form.series_type.label(class="col-sm-2 col-form-label") }}
         <div class="col-sm-offset-2">
           {% for subfield in form.series_type %}
@@ -71,7 +87,6 @@
         </div>
       </div>
 
-      {% if not edit %}
       <div class="form-group row">
         {{ form.veto_mappool.label(class="col-sm-2 col-form-label", style="height:50px") }}
         <div class="col-sm-offset-2">
@@ -84,7 +99,6 @@
           {% endfor %}
         </div>
       </div>
-      {% endif %}
 
       {% if edit %}
     <div class="input submit col-sm-offset-1">

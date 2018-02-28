@@ -30,9 +30,6 @@ import flask_sqlalchemy
 import flask_openid
 import flask_limiter
 
-from . import logos
-from . import steamid
-from . import util
 from . import config
 
 
@@ -90,9 +87,11 @@ app.logger.addHandler(stream_handler)
 app.logger.setLevel(logging.INFO)
 
 # Find version info
-app.jinja_env.globals.update(VERSION=util.get_version())
+app.jinja_env.globals.update(VERSION=utils.get_version())
 app.jinja_env.globals.update(BRAND=config_setting('BRAND'))
 
+from . import utils
+from .utils import logos, steamid
 # Setup any data structures needed
 logos.initialize_logos()
 _steam_id_re = re.compile('steamcommunity.com/openid/id/(.*?)$')
@@ -102,17 +101,20 @@ def register_blueprints():
     from .api import api_blueprint
     app.register_blueprint(api_blueprint)
 
-    from .tournament import tournament_blueprint
+    from .views import tournament_blueprint
     app.register_blueprint(tournament_blueprint)
 
-    from .match import match_blueprint
+    from .views import match_blueprint
     app.register_blueprint(match_blueprint)
 
-    from .team import team_blueprint
+    from .views import team_blueprint
     app.register_blueprint(team_blueprint)
 
-    from .server import server_blueprint
+    from .views import server_blueprint
     app.register_blueprint(server_blueprint)
+
+    from .views import veto_blueprint
+    app.register_blueprint(veto_blueprint)
 
 
 @app.route('/login')
@@ -231,7 +233,6 @@ def get_metrics():
     add_val('Servers added', GameServer.query.count())
     add_val('Maps with stats saved', MapStats.query.count())
     add_val('Unique players', PlayerStats.query.distinct().count())
-    add_val('Top 10 killers', {player.name: player.kills for player in PlayerStats.query.order_by('kills').limit(10).all()})
 
     return values
 

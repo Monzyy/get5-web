@@ -1,0 +1,12 @@
+<div id="progress-row" class="row">
+    {% for step in progress | reverse %}
+        <div id="step" class="col-auto">   
+            <div class="card text-white bg-{{ 'danger' if step.action == 'b' else 'success' }}" style="width: 10rem;">
+              <img class="card-img-bottom" src="/static/img/maps/{{ step.mapname }}.jpg" alt="{{ step.mapname }}">
+              <div class="card-body">
+                <h5 class="card-title team{{ step.team }}-title"> </h5>
+              </div>
+            </div>    
+        </div>
+    {% endfor %}
+</div>

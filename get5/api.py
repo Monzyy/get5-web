@@ -1,13 +1,11 @@
-from get5 import app, limiter, db, BadRequestError
-from .util import as_int
-from .models import Match, MapStats, PlayerStats, GameServer, Tournament, Team
-from . import challonge 
-
-from flask import Blueprint, request
-import flask_limiter
-
 import re
 import datetime
+from flask import Blueprint, request
+import flask_limiter
+from . import app, limiter, db, BadRequestError, config_setting
+from .utils import as_int, challonge
+from .models import Match, MapStats, PlayerStats, GameServer, Tournament, Team
+
 
 api_blueprint = Blueprint('api', __name__)
 
@@ -70,19 +68,19 @@ def match_finish(matchid):
     server = GameServer.query.get(match.server_id)
     if server:
         server.in_use = False
-
     db.session.commit()
-    tournament = Tournament.query.get(match.tournament_id)
-    scores = match.get_scores()
-    if scores:
-        scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in scores])
-    else:
-        scores_csv = '{}-{}'.format(match.team1_score, match.team2_score)
-    if match.winner:
-        winner_team = Team.query.get(match.winner).challonge_id
-    else:
-        winner_team = 'tie'
-    chall_worker.task_queue.put(('update_match', (tournament.challonge_id, match.challonge_id), {"scores_csv": scores_csv, "winner_id":winner_team}))
+    if not config_setting('TESTING'):
+        tournament = Tournament.query.get(match.tournament_id)
+        scores = match.get_scores()
+        if scores:
+            scores_csv = ','.join(['{}-{}'.format(s1, s2) for s1, s2 in scores])
+        else:
+            scores_csv = '{}-{}'.format(match.team1_score, match.team2_score)
+        if match.winner:
+            winner_team = Team.query.get(match.winner).challonge_id
+        else:
+            winner_team = 'tie'
+        chall_worker.task_queue.put(('update_match', (tournament.challonge_id, match.challonge_id), {"scores_csv": scores_csv, "winner_id":winner_team}))
 
     app.logger.info('Finished match {}, winner={}'.format(match, winner))
 
@@ -121,8 +119,9 @@ def match_map_update(matchid, mapnumber):
             map_stats.team1_score = t1
             map_stats.team2_score = t2
             db.session.commit()
-            tournament = Tournament.query.get(match.tournament_id)
-            chall_worker.task_queue.put(('update_match', (tournament.challonge_id, match.challonge_id), {"scores_csv": "{}-{}".format(t1,t2)}))
+            if not config_setting('TESTING'):
+                tournament = Tournament.query.get(match.tournament_id)
+                chall_worker.task_queue.put(('update_match', (tournament.challonge_id, match.challonge_id), {"scores_csv": "{}-{}".format(t1,t2)}))
     else:
         return 'Failed to find map stats object', 400
 

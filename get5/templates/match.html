@@ -81,9 +81,11 @@
     <h5>
       <span class="badge badge-info">{{ match.get_format() }}</span>
       {% if match.start_time is none %}
+      <a href="/veto/{{match.id}}">
       <span class="badge badge-primary">
         Pending
       </span>
+      </a>
       {% elif match.live() %}
       <span class="badge badge-success">
         Live!
