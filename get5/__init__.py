@@ -29,6 +29,7 @@ import flask_cache
 import flask_sqlalchemy
 import flask_openid
 import flask_limiter
+import flask_migrate
 
 from . import logos
 from . import steamid
@@ -65,6 +66,7 @@ oid = flask_openid.OpenID(app)
 # Setup database connection
 db = flask_sqlalchemy.SQLAlchemy(app)
 from .models import User, Team, GameServer, Match, Tournament, MapStats, PlayerStats  # noqa: E402
+migrate = flask_migrate.Migrate(app, db)
 
 # Setup rate limiting
 limiter = flask_limiter.Limiter(

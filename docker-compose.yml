@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+    db:
+        image: "postgres"
+        volumes:
+            - "dbdata:/var/lib/postgresql/data"
+        env_file:
+            - docker-compose.env
+        networks:
+            - db_nw
+    get5-web:
+        build: ./
+        env_file:
+            - docker-compose.env
+        volumes:
+            - .:/usr/src/get5-web
+        ports:
+            - "8000:8000"
+        networks:
+            - db_nw
+        depends_on:
+            - db
+
+networks:
+    db_nw:
+        driver: bridge
+
+volumes:
+    dbdata:

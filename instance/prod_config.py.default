@@ -1,11 +1,15 @@
+import os
 ##### You must change these before running
-SQLALCHEMY_DATABASE_URI = 'mysql://user:password@host/db'  # Sqlalchemy database connection info
+DB_USER = os.environ['POSTGRES_USER']
+DB_PWD = os.environ['POSTGRES_PASSWORD']
+DB_HOST = "db"
+DB = os.environ['POSTGRES_DB']
+
+SQLALCHEMY_DATABASE_URI = 'postgres://{}:{}@{}/{}'.format(DB_USER, DB_PWD, DB_HOST, DB)  # Sqlalchemy database connection infoA
 STEAM_API_KEY = '???'  # See https://steamcommunity.com/dev/apikey
 SECRET_KEY = '???'  # Secret key used for flask cookies
 
 ##### Everything below this line is optional to change
-
-import os
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__), '..', 'logs'))
 LOG_PATH = os.path.join(location, 'get5.log')
