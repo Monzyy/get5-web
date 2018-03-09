@@ -81,10 +81,10 @@ def team_create():
             data = form.data
             auths = form.get_auth_list()
 
-            team = Team.create(g.user, data['name'], data['tag'],
-                               data['country_flag'], data['logo'],
-                               auths, data['public_team'] and g.user.admin,
-                               data['open_join'])
+            team = Team.create(user=g.user, name=data['name'], tag=data['tag'],
+                               flag=data['country_flag'], logo=data['logo'],
+                               auths=auths, public_team=data['public_team'] and g.user.admin,
+                               open_join=data['open_join'])
 
             db.session.commit()
             app.logger.info(

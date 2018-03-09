@@ -356,12 +356,18 @@ class Match(db.Model):
         if not server:
             return False
 
-        url = url_for('match.match_config', matchid=self.id,
-                      _external=True, _scheme='http')
-        # Remove http protocal since the get5 plugin can't parse args with the
-        # : in them.
-        url = url.replace("http://", "")
-        url = url.replace("https://", "")
+        if app.config['FORCE_LOCAL']:
+            url = url_for('match.match_config', matchid=self.id,
+                          _external=False)
+            url = url.replace("http://", "")
+            url = url.replace("https://", "")
+            url = app.config['FORCE_LOCAL'] + url
+        else:
+            url = url_for('match.match_config', matchid=self.id,
+                          _external=True, _scheme='http')
+            url = url.replace("http://", "")
+            url = url.replace("https://", "")
+
 
         loadmatch_response = server.send_rcon_command(
             'get5_loadmatch_url ' + url)
@@ -433,8 +439,12 @@ class Match(db.Model):
 
         d['cvars'] = {}
 
-        d['cvars']['get5_web_api_url'] = url_for(
-            'home', _external=True, _scheme='http')
+        if app.config['FORCE_LOCAL']:
+            url = app.config['FORCE_LOCAL'] + url_for('home', _external=False)
+        else:
+            url = url_for('home', _external=True, _scheme='http')
+
+        d['cvars']['get5_web_api_url'] = url
 
         if self.veto_mappool:
             d['maplist'] = []

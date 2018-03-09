@@ -14,11 +14,11 @@
   <td class="text-center"> {{ player.deaths }} </td>
   <td class="text-center"> {{ player.assists }} </td>
   <td class="text-center"> {{ player.flashbang_assists }} </td>
-  
+
   <td class="text-center"> {{ player.v1 }} </td>
   <td class="text-center"> {{ player.v2 }} </td>
   <td class="text-center"> {{ player.v3 }} </td>
-  
+
   <td class="text-center"> {{ player.get_rating() | round(2) }} </td>
   <td class="text-center"> {{ player.get_fpr() | round(2) }} </td>
   <td class="text-center"> {{ player.get_adr() | round(1) }} </td>
@@ -53,7 +53,7 @@
         <a class="dropdown-item" href="{{request.path}}/cancel">Cancel match</a>
         <a class="dropdown-item" href="{{request.path}}/start">Start match</a>
       </div>
-    </div> 
+    </div>
   </div>
 </div>
 <div class="row justify-content-center">
@@ -96,23 +96,30 @@
     </span>
   </h5>
 </div>
-</div>  
+</div>
 <div class="row">
   {% if match.cancelled %}
   <div class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
     This match has been cancelled.
-  </div>   
+  </div>
   {% elif match.forfeit %}
   <div class="alert alert-warning" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
     This match was forfeit by {{match.get_loser()}}.
-  </div>  
+  </div>
   {% elif match.live() %}
-  <div class="col-4 ml-auto mr-auto">
-    <a href="steam://connect/{{match.get_server().get_hostport()}}" class="btn btn-success btn-lg btn-block">Connect to server</a>
+  <div class="row">
+      <div class="col-4 ml-auto mr-auto">
+        <a href="steam://connect/{{match.get_server().get_hostport()}}" class="btn btn-success btn-lg btn-block">Connect to server</a>
+      </div>
+  </div>
+  <div class="row">
+      <div class="col-4 ml-auto mr-auto">
+          <code>connect {{match.get_server().get_hostport()}}</code>
+      </div>
   </div>
   {% endif %}
 </div>
@@ -124,7 +131,7 @@
         Map {{ map_stats.map_number + 1 }}: {{ map_stats.map_name }}&nbsp;&nbsp;|&nbsp;&nbsp;
         {{team1.name}} {{map_stats.team1_score}} {{ score_symbol(map_stats.team1_score, map_stats.team2_score) }} {{map_stats.team2_score}} {{team2.name}}
       </h2>
-    </div>        
+    </div>
     <div class="card-body">
       <table class="table table-hover table-condensed">
         <thead>
@@ -145,9 +152,9 @@
         </thead>
         <tbody>
           {{ player_stat_table(team1, map_stats) }}
-          
+
           {{ player_stat_table(team2, map_stats) }}
-        </tbody>     
+        </tbody>
       </table>
     </div>
     <div class="card-footer text-muted">
@@ -163,11 +170,11 @@
 <div class="row">
   <div class="well text-muted">
     <p>Started at {{ match.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
-    {% if match.end_time is not none %}   
+    {% if match.end_time is not none %}
     <p>Ended at {{ match.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
     {% endif %}
   </div>
-</div>    
+</div>
 {% endif %}
 
 <script>
@@ -177,21 +184,21 @@
       window.location.href = "{{request.path}}/adduser?team=team1&auth=" + encodeURIComponent(input);
     }
   });
-  
+
   jQuery("#addplayer_team2").click(function(e) {
     var input = prompt("Please enter a steamid to add to {{team2.name}}", "");
     if (input != null) {
       window.location.href = "{{request.path}}/adduser?team=team2&auth=" + encodeURIComponent(input);
     }
   });
-  
+
   jQuery("#addplayer_spec").click(function(e) {
     var input = prompt("Please enter a steamid to add to the spectators list", "");
     if (input != null) {
       window.location.href = "{{request.path}}/adduser?team=spec&auth=" + encodeURIComponent(input);
     }
   });
-  
+
   jQuery("#rcon_command").click(function(e) {
     var input = prompt("Enter a command to send", "");
     if (input != null) {

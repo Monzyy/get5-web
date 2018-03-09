@@ -1,5 +1,6 @@
 import os
 ##### You must change these before running
+FORCE_LOCAL = False
 DB_USER = os.environ['POSTGRES_USER']
 DB_PWD = os.environ['POSTGRES_PASSWORD']
 DB_HOST = "db"
