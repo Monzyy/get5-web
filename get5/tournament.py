@@ -179,7 +179,7 @@ def _create_and_add_participant(tournament, participant):
     team = Team.create(g.user, name=participant['name'],
                        tag=participant['display_name'],
                        challonge_id=participant['id'],
-                       flag=None, logo=None, auths=None)
+                       flag=None, logo=None, auths=None, open_join=True)
     db.session.commit()
     try:
         chall.update_participant_misc(tournament.challonge_id, participant['id'], team.id)

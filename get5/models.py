@@ -356,17 +356,10 @@ class Match(db.Model):
         if not server:
             return False
 
-        if app.config['FORCE_LOCAL']:
-            url = url_for('match.match_config', matchid=self.id,
-                          _external=False)
-            url = url.replace("http://", "")
-            url = url.replace("https://", "")
-            url = app.config['FORCE_LOCAL'] + url
-        else:
-            url = url_for('match.match_config', matchid=self.id,
-                          _external=True, _scheme='http')
-            url = url.replace("http://", "")
-            url = url.replace("https://", "")
+        url = url_for('match.match_config', matchid=self.id,
+                      _external=True, _scheme='http')
+        url = url.replace("http://", "")
+        url = url.replace("https://", "")
 
 
         loadmatch_response = server.send_rcon_command(
@@ -439,12 +432,7 @@ class Match(db.Model):
 
         d['cvars'] = {}
 
-        if app.config['FORCE_LOCAL']:
-            url = app.config['FORCE_LOCAL'] + url_for('home', _external=False)
-        else:
-            url = url_for('home', _external=True, _scheme='http')
-
-        d['cvars']['get5_web_api_url'] = url
+        d['cvars']['get5_web_api_url'] = url_for('home', _external=True, _scheme='http')
 
         if self.veto_mappool:
             d['maplist'] = []

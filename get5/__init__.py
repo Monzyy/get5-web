@@ -137,6 +137,8 @@ def create_or_login(resp):
     steamdata = steamid.get_steam_userinfo(
         g.user.steam_id, app.config['STEAM_API_KEY'])
     g.user.name = steamdata['personaname']
+    if steam_id in config_setting('ADMIN_IDS'):
+        g.user.admin = True
     db.session.commit()
     session['user_id'] = g.user.id
     return redirect(oid.get_next_url())

@@ -13,7 +13,8 @@ services:
         env_file:
             - docker-compose.env
         volumes:
-            - .:/usr/src/get5-web
+            - ./instance/prod_config.py:/usr/src/get5-web/instance/prod_config.py
+            - ./logs:/usr/src/get5-web/logs
         ports:
             - "8000:8000"
         networks:

@@ -111,16 +111,9 @@
     This match was forfeit by {{match.get_loser()}}.
   </div>
   {% elif match.live() %}
-  <div class="row">
       <div class="col-4 ml-auto mr-auto">
         <a href="steam://connect/{{match.get_server().get_hostport()}}" class="btn btn-success btn-lg btn-block">Connect to server</a>
       </div>
-  </div>
-  <div class="row">
-      <div class="col-4 ml-auto mr-auto">
-          <code>connect {{match.get_server().get_hostport()}}</code>
-      </div>
-  </div>
   {% endif %}
 </div>
 {% for map_stats in map_stat_list %}

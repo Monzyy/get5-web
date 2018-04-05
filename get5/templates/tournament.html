@@ -63,26 +63,19 @@
             </p>
         </div>
     </div>
-    {% if tournament.challonge_data.state == 'pending' %}
     <div class="row">
         <div class="col">
-            <p>
-                <a id="sign_up" href="{{ tournament.challonge_data.sign_up_url }}" class="btn btn-primary btn-lg">Sign Up</a>
+            <p class="lead">
+	        Tilmelding: Holdkaptajn skriver holdnavn #counter-strike kanalen på Discord, kaptajnen modtager derefter et link som alle spillere skal bruge til at joine holdet.	
             </p>
         </div>
     </div>
-    {% endif %}   
 </div>
 
 <div class="row">
     <div class="col-4">
         <div class="card">
             <h4 class="card-header">Participants</h4>
-            {% if tournament.challonge_data.state == 'pending' %}
-            <div class="card-body">
-                <a href="{{ tournament.challonge_data.sign_up_url }}" class="card-link">Sign Up</a>
-            </div>
-            {% endif %}
             <div class="list-group list-group-flush">
                 {% for participant in participants %}
                 <a href="/team/{{ participant.id }}" class="list-group-item">
